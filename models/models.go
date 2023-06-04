@@ -1,31 +1,22 @@
 package models
 
-type Track struct {
-	Name        string
-	Url         string
-	ImageUrl    string
-	Tags        []string
-	ReleaseDate string
-	Album       string
-	Artist      string
+type Artist struct {
+	Name string `json:"name"`
+	Url  string `json:"url"`
 }
 
 type Album struct {
-	Name        string
-	Url         string
-	ImageUrl    string
-	Tags        []string
-	ReleaseDate string
-	Artist      string
-	NumTracks   uint8
-	NumMinutes  uint8
+	Name        string   `json:"name"`
+	Url         string   `json:"url"`
+	ImageUrl    string   `json:"image_url"`
+	Tags        []string `json:"tags"`
+	ReleaseDate string   `json:"release_date"`
+	Artists     []Artist `json:"artists"`
+	NumTracks   uint8    `json:"num_tracks"`
 }
 
-type Artist struct {
-	Name     string
-	Url      string
-	ImageUrl string
-	Tags     []string
-	Genre    string
-	Location string
+type Track struct {
+	Name  string `json:"name"`
+	Url   string `json:"url"`
+	Album Album  `json:"album"`
 }
