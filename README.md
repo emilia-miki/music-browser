@@ -17,7 +17,7 @@ What skills are currently demostrated by the application:
 - :x: Terraform
 - :x: AWS
 - :white_check_mark: JSON
-- :x: GraphQL
+- :white_check_mark: GraphQL
 - :white_check_mark: gRPC
 
 Additionally:
@@ -63,3 +63,6 @@ Or a POST request to download a song:
 --data-urlencode url='https://dreamcatalogue.bandcamp.com/track/--436' \
 | python3 -m json.tool
 ```
+
+There is also a working GraphQL endpoint at localhost:3333/graphql.
+The schema is defined in the file [graphql.go](music_browser/graphql/graphql.go)
