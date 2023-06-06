@@ -20,12 +20,12 @@ What skills are currently demostrated by the application:
 - :x: GraphQL
 - :white_check_mark: gRPC
 
+Additionally:
+- :white_check_mark: Python and NodeJS scripting
+
 What else doesn't work yet:
 - Downloading tracks
 - Exploring local backend
-
-Additionally:
-- :white_check_mark: Python and NodeJS scripting
 
 You can build this app by running 
 ```
