@@ -1,4 +1,4 @@
-module github.com/emilia-miki/music-browser
+module github.com/emilia-miki/music-browser/music_browser
 
 go 1.20
 

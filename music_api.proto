@@ -1,0 +1,55 @@
+syntax = "proto3";
+package music_api;
+option go_package="github.com/emilia-miki/music-browser/music_api";
+
+service MusicApi{
+  rpc SearchArtists(Query) returns (Artists) {}
+  rpc SearchAlbums(Query) returns (Albums) {}
+}
+
+message Query {
+  string query = 1;
+}
+
+message ArtistLink {
+  string name = 1;
+  string url = 2;
+}
+
+message Track {
+  string name = 1;
+  string url = 2;
+  string image_url = 3;
+  uint32 duration_seconds = 4;
+
+  string album = 5;
+  string album_url = 6;
+
+  repeated ArtistLink artists = 7;
+}
+
+message Album {
+  string name = 1;
+  string url = 2;
+  string image_url = 3;
+  uint32 year = 4;
+  uint32 duration_seconds = 5;
+  repeated Track tracks = 6;
+
+  repeated ArtistLink artists = 7;
+}
+
+message Albums {
+  repeated Album items = 1;
+}
+
+message Artist {
+  string name = 1;
+  string url = 2;
+  string image_url = 3;
+  repeated Album albums = 4;
+}
+
+message Artists {
+  repeated Artist items = 1;
+}

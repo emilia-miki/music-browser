@@ -50,8 +50,8 @@ func GetApplication() Application {
 	var app Application
 
 	app.Ports.Server = getPortFromEnvOrDefault("MUSIC_BROWSER_PORT", 3333)
-	app.Ports.YTMusicAPI = getPortFromEnvOrDefault("YOUTUBE_MUSIC_API_PORT", 3334)
-	app.Ports.BandcampAPI = getPortFromEnvOrDefault("MUSIC_BROWSER_PORT", 3335)
+	app.Ports.BandcampAPI = getPortFromEnvOrDefault("BANDCAMP_API_PORT", 3334)
+	app.Ports.YTMusicAPI = getPortFromEnvOrDefault("YOUTUBE_MUSIC_API_PORT", 3335)
 	app.ConnectionStrings.Redis = fmt.Sprintf("redis://localhost:%d/0", getPortFromEnvOrDefault("REDIS_PORT", 3336))
 	app.ConnectionStrings.PostgreSQL = fmt.Sprintf("postgresql://postgres@localhost:%d/postgres?sslmode=disable", getPortFromEnvOrDefault("POSTGRES_PORT", 3337))
 
@@ -65,7 +65,7 @@ func GetSecrets() Secrets {
 	secrets.Spotify.ClientSecret = os.Getenv("SPOTIFY_CLIENT_SECRET")
 
 	if secrets.Spotify.ClientId == "" || secrets.Spotify.ClientSecret == "" {
-		log.Println("Spotify API secrets not provided")
+		log.Fatal("Spotify API secrets not provided")
 	}
 
 	return secrets

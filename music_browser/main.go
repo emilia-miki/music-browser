@@ -1,27 +1,26 @@
 package main
 
 import (
-	"context"
 	"database/sql"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"net/url"
-	"os"
-	"os/exec"
 
-	"github.com/emilia-miki/music-browser/backend"
-	bandcamp_backend "github.com/emilia-miki/music-browser/backend/bandcamp"
-	local_backend "github.com/emilia-miki/music-browser/backend/local"
-	"github.com/emilia-miki/music-browser/backend/music_downloader"
-	"github.com/emilia-miki/music-browser/backend/music_explorer_cache"
-	spotify_backend "github.com/emilia-miki/music-browser/backend/spotify"
-	yt_music_backend "github.com/emilia-miki/music-browser/backend/youtube_music"
-	"github.com/emilia-miki/music-browser/environment"
+	"github.com/emilia-miki/music-browser/music_browser/backend"
+	bandcamp_backend "github.com/emilia-miki/music-browser/music_browser/backend/bandcamp"
+	local_backend "github.com/emilia-miki/music-browser/music_browser/backend/local"
+	"github.com/emilia-miki/music-browser/music_browser/backend/music_downloader"
+	"github.com/emilia-miki/music-browser/music_browser/backend/music_explorer_cache"
+	spotify_backend "github.com/emilia-miki/music-browser/music_browser/backend/spotify"
+	yt_music_backend "github.com/emilia-miki/music-browser/music_browser/backend/youtube_music"
+	"github.com/emilia-miki/music-browser/music_browser/environment"
+	"github.com/emilia-miki/music-browser/music_browser/music_api"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var spotify backend.MusicExplorer
@@ -59,22 +58,17 @@ func sendOkJsonResponse(response http.ResponseWriter, json []byte) {
 
 func getRequestHandler(response http.ResponseWriter, params url.Values) {
 	var backend backend.MusicExplorer
-	switch params.Get("backend") {
-	case "spotify":
+	backendString := params.Get("backend")
+	if backendString == "spotify" {
 		backend = spotify
-		break
-	case "yt-music":
-		backend = ytMusic
-		break
-	case "bandcamp":
+	} else if backendString == "bandcamp" {
 		backend = bandcamp
-		break
-	case "local":
+	} else if backendString == "yt-music" {
+		backend = ytMusic
+	} else if backendString == "local" {
 		backend = local
-		break
-	default:
+	} else {
 		sendBadRequestErrorResponse(response, "Invalid backend")
-		return
 	}
 
 	query := params.Get("query")
@@ -84,19 +78,13 @@ func getRequestHandler(response http.ResponseWriter, params url.Values) {
 	}
 
 	var results interface{}
-	switch params.Get("search-type") {
-	case "track":
-		results = backend.SearchTracks(query)
-		break
-	case "album":
-		results = backend.SearchAlbums(query)
-		break
-	case "artist":
+	searchType := params.Get("search-type")
+	if searchType == "artist" {
 		results = backend.SearchArtists(query)
-		break
-	default:
+	} else if searchType == "album" {
+		results = backend.SearchAlbums(query)
+	} else {
 		sendBadRequestErrorResponse(response, "Invalid search type")
-		return
 	}
 
 	json := serializeResponseBody(results)
@@ -115,18 +103,13 @@ func postRequestHandler(response http.ResponseWriter, params url.Values) {
 }
 
 func requestHandler(response http.ResponseWriter, request *http.Request) {
-	log.Printf("Processing a %s request on %s\n", request.Method, request.RequestURI)
-
-	switch request.Method {
-	case "GET":
+	if request.Method == "GET" {
 		getRequestHandler(response, request.URL.Query())
-		break
-	case "POST":
+	} else if request.Method == "POST" {
 		postRequestHandler(response, request.URL.Query())
-		break
-	default:
-		sendBadRequestErrorResponse(response, "Only GET and POST methods are allowed")
-		break
+	} else {
+		sendBadRequestErrorResponse(response,
+			"Only GET and POST methods are allowed")
 	}
 }
 
@@ -147,47 +130,28 @@ func main() {
 		Secrets: secrets.Spotify,
 	}
 
-	ctx, cancel := context.WithCancel(context.Background())
-	defer cancel()
-
-	cmd := exec.CommandContext(ctx, "python3", "yt_music_api.py")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Start()
-	if err != nil {
-		log.Fatalf("Failed to start Python script: %s", err)
-	}
-
-	ytMusicApiConn, err := grpc.Dial(fmt.Sprintf("localhost:%d", app.Ports.YTMusicAPI), grpc.WithInsecure())
+	var opts []grpc.DialOption
+	opts = append(opts, grpc.WithTransportCredentials(insecure.NewCredentials()))
+	ytMusicApiConn, err := grpc.Dial(fmt.Sprintf("localhost:%d", app.Ports.YTMusicAPI), opts...)
 	if err != nil {
 		log.Fatalf("Failed to connect to gRPC server: %s", err)
 	}
 	defer ytMusicApiConn.Close()
 
 	ytMusic = &yt_music_backend.MusicExplorer{
-		Cache:          cache,
-		YtMusicApiConn: ytMusicApiConn,
+		Cache:  cache,
+		Client: music_api.NewMusicApiClient(ytMusicApiConn),
 	}
 
-	cmd = exec.CommandContext(ctx, "node", "bandcamp_api.js")
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	err = cmd.Start()
-	if err != nil {
-		log.Fatalf("Failed to start Node.JS script: %s", err)
-	}
-
-	bandcampApiConn, err := grpc.Dial(fmt.Sprintf("localhost:%d", app.Ports.BandcampAPI), grpc.WithInsecure())
+	bandcampApiConn, err := grpc.Dial(fmt.Sprintf("localhost:%d", app.Ports.BandcampAPI), opts...)
 	if err != nil {
 		log.Fatalf("Failed to connect to gRPC server: %s", err)
 	}
 	defer bandcampApiConn.Close()
 
 	bandcamp = &bandcamp_backend.MusicExplorer{
-		Cache:               cache,
-		BandcampScraperConn: bandcampApiConn,
+		Cache:  cache,
+		Client: music_api.NewMusicApiClient(bandcampApiConn),
 	}
 
 	postgresDB, err := sql.Open("postgres", app.ConnectionStrings.PostgreSQL)

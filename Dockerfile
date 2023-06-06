@@ -1,10 +1,10 @@
 FROM golang AS builder
 WORKDIR /app
-COPY . .
+COPY music_browser music_browser
+WORKDIR /app/music_browser
 RUN CGO_ENABLED=0 GOOS=linux go build
 
 FROM fedora
-WORKDIR /app
 RUN dnf update -y \
     && dnf install -y \
     redis \
@@ -12,22 +12,29 @@ RUN dnf update -y \
     nodejs \
     python3 \
     python3-pip \
-    && npm install bandcamp-scraper \
-    && pip3 install ytmusicapi
-COPY --from=builder /app/music-browser .
-COPY bandcamp_api.js .
-COPY yt_music_api.py .
-RUN mkdir /usr/local/pgsql \
+    && pip3 install ytmusicapi grpcio-tools
+
+WORKDIR /app
+COPY music_api.proto .
+COPY bandcamp-api bandcamp-api
+COPY yt_music_api yt_music_api
+COPY --from=builder /app/music_browser/music_browser .
+
+RUN cd bandcamp-api && npm install && cd .. \
+&& mkdir /usr/local/pgsql \
 && chown postgres /usr/local/pgsql \
 && sudo -u postgres initdb -D /usr/local/pgsql/data -A trust
 
-ENV REDIS_PORT=3336
-ENV POSTGRES_PORT=3337
+EXPOSE 3333
+ENV MUSIC_BROWSER_PORT=3333
 ENV BANDCAMP_API_PORT=3334
 ENV YT_MUSIC_API_PORT=3335
-ENV MUSIC_BROWSER_PORT=3333
-EXPOSE 3333
+ENV REDIS_PORT=3336
+ENV POSTGRES_PORT=3337
 
-# Start all required servers sequentially
-CMD node bandcamp_api.js & python3 yt_music_api.py & redis-server --port $REDIS_PORT --requirepass "" & sudo -u postgres pg_ctl start -D /usr/local/pgsql/data -o "-p ${POSTGRES_PORT}" && ./music-browser
+CMD node bandcamp-api > bandcamp-api/bandcamp-api.log 2>&1 \
+& python3 yt_music_api > yt_music_api/yt_music_api.log 2>&1 \
+& redis-server --port $REDIS_PORT --requirepass "" \
+& sudo -u postgres pg_ctl start -D /usr/local/pgsql/data -o "-p ${POSTGRES_PORT}" \
+&& ./music_browser
 
