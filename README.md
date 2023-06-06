@@ -24,8 +24,7 @@ Additionally:
 - :white_check_mark: Python and NodeJS scripting
 
 What else doesn't work yet:
-- Downloading tracks
-- Exploring local backend
+- Downloading and exploring music locally
 
 You can build this app by running 
 ```
