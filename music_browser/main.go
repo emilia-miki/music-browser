@@ -16,7 +16,9 @@ import (
 	spotify_backend "github.com/emilia-miki/music-browser/music_browser/backend/spotify"
 	yt_music_backend "github.com/emilia-miki/music-browser/music_browser/backend/youtube_music"
 	"github.com/emilia-miki/music-browser/music_browser/environment"
+	graphql_schema "github.com/emilia-miki/music-browser/music_browser/graphql"
 	"github.com/emilia-miki/music-browser/music_browser/music_api"
+	"github.com/graphql-go/handler"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 	"google.golang.org/grpc"
@@ -109,7 +111,7 @@ func requestHandler(response http.ResponseWriter, request *http.Request) {
 		postRequestHandler(response, request.URL.Query())
 	} else {
 		sendBadRequestErrorResponse(response,
-			"Only GET and POST methods are allowed")
+			"Only GET and POST methods are allowed on this endpoint")
 	}
 }
 
@@ -164,6 +166,16 @@ func main() {
 	}
 
 	http.HandleFunc("/", requestHandler)
+	schema := graphql_schema.GetSchema(map[string]backend.MusicExplorer{
+		"spotify":  spotify,
+		"bandcamp": bandcamp,
+		"yt-music": ytMusic,
+		"local":    local,
+	})
+	http.Handle("/graphql", handler.New(&handler.Config{
+		Schema: &schema,
+		Pretty: true,
+	}))
 
 	log.Printf("Server listening on port %d\n", app.Ports.Server)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", app.Ports.Server), nil)
