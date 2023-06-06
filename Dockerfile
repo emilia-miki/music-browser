@@ -35,6 +35,7 @@ ENV POSTGRES_PORT=3337
 CMD node bandcamp-api > bandcamp-api/bandcamp-api.log 2>&1 \
 & python3 yt_music_api > yt_music_api/yt_music_api.log 2>&1 \
 & redis-server --port $REDIS_PORT --requirepass "" \
+--maxmemory 1gb --maxmemory-policy allkeys-lfu --activedefrag yes --save "" \
 & sudo -u postgres pg_ctl start -D /usr/local/pgsql/data -o "-p ${POSTGRES_PORT}" \
 && ./music_browser
 
