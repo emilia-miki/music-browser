@@ -59,10 +59,11 @@ func (sb *SpotifyBackend) GetArtist(
 	}
 	json.Unmarshal(jsonData, &artistData)
 
+	imageUrl := getBestImageUrl(artistData.Images)
 	result.Artist = &music_api.Artist{
-		Url:      artistData.ExternalUrls.Spotify,
-		ImageUrl: getBestImageUrl(artistData.Images),
-		Name:     artistData.Name,
+		Url:      &artistData.ExternalUrls.Spotify,
+		ImageUrl: &imageUrl,
+		Name:     &artistData.Name,
 	}
 
 	uri = fmt.Sprintf("https://api.spotify.com/v1/artists/%s/albums", id)
@@ -89,17 +90,15 @@ func (sb *SpotifyBackend) GetArtist(
 		Albums: make([]*music_api.Album, len(resp.Items)),
 	}
 	for i, album := range resp.Items {
-		artistUrls := make([]string, len(album.Artists))
-		for i, artistLink := range album.Artists {
-			artistUrls[i] = artistLink.ExternalUrls.Spotify
-		}
+		imageUrl := getBestImageUrl(album.Images)
+		year := getYearFromDate(album.ReleaseDate)
 
 		result.Albums.Albums[i] = &music_api.Album{
-			Url:        album.ExternalUrls.Spotify,
-			ImageUrl:   getBestImageUrl(album.Images),
-			ArtistUrls: artistUrls,
-			Name:       album.Name,
-			Year:       getYearFromDate(album.ReleaseDate),
+			Url:       &album.ExternalUrls.Spotify,
+			ImageUrl:  &imageUrl,
+			ArtistUrl: &album.Artists[0].ExternalUrls.Spotify,
+			Name:      &album.Name,
+			Year:      &year,
 		}
 	}
 
@@ -144,36 +143,30 @@ func (sb *SpotifyBackend) GetAlbum(
 	}
 	json.Unmarshal(jsonData, &albumData)
 
-	artistUrls := make([]string, len(albumData.Artists))
-	for i, artistLink := range albumData.Artists {
-		artistUrls[i] = artistLink.ExternalUrls.Spotify
-	}
-
 	albumImageUrl := getBestImageUrl(albumData.Images)
+	year := getYearFromDate(albumData.ReleaseDate)
+
 	result.Album = &music_api.Album{
-		Url:        albumData.ExternalUrls.Spotify,
-		ImageUrl:   albumImageUrl,
-		ArtistUrls: artistUrls,
-		Name:       albumData.Name,
-		Year:       getYearFromDate(albumData.ReleaseDate),
+		Url:       &albumData.ExternalUrls.Spotify,
+		ImageUrl:  &albumImageUrl,
+		ArtistUrl: &albumData.Artists[0].ExternalUrls.Spotify,
+		Name:      &albumData.Name,
+		Year:      &year,
 	}
 
 	result.Tracks = &music_api.Tracks{
 		Tracks: make([]*music_api.Track, len(albumData.Tracks.Items)),
 	}
 	for i, trackData := range albumData.Tracks.Items {
-		artistUrls := make([]string, len(trackData.Artists))
-		for i, artistLink := range trackData.Artists {
-			artistUrls[i] = artistLink.ExternalUrls.Spotify
-		}
+		durationSeconds := trackData.DurationMilliseconds / 1000
 
 		result.Tracks.Tracks[i] = &music_api.Track{
-			Url:             trackData.ExternalUrls.Spotify,
-			ImageUrl:        albumImageUrl,
-			ArtistUrls:      artistUrls,
-			AlbumUrl:        albumData.ExternalUrls.Spotify,
-			Name:            trackData.Name,
-			DurationSeconds: trackData.DurationMilliseconds / 1000,
+			Url:             &trackData.ExternalUrls.Spotify,
+			ImageUrl:        &albumImageUrl,
+			ArtistUrl:       &albumData.Artists[0].ExternalUrls.Spotify,
+			AlbumUrl:        &albumData.ExternalUrls.Spotify,
+			Name:            &trackData.Name,
+			DurationSeconds: &durationSeconds,
 		}
 	}
 
@@ -182,7 +175,7 @@ func (sb *SpotifyBackend) GetAlbum(
 
 func (sb *SpotifyBackend) GetTrack(
 	url string,
-) (*music_api.TrackWithAlbumAndArtists, error) {
+) (*music_api.TrackWithAlbumAndArtist, error) {
 	id := extractIdFromUrl(url)
 	jsonResponse := sb.getFromApi("https://api.spotify.com/v1/tracks/" + id)
 
@@ -209,46 +202,44 @@ func (sb *SpotifyBackend) GetTrack(
 
 	imageUrl := getBestImageUrl(resp.Album.Images)
 
-	artistList := make([]*music_api.Artist, len(resp.Artists))
-	artistUrls := make([]string, len(resp.Artists))
-	for i, artist := range resp.Artists {
-		artistUrls[i] = artist.ExternalUrls.Spotify
-		jsonResponse := sb.getFromApi("https://api.spotify.com/v1/artists/" + artist.Id)
-		var respWithImages struct {
-			Images []image `json:"images"`
-		}
-		json.Unmarshal(jsonResponse, &respWithImages)
-		artistList[i] = &music_api.Artist{
-			Url:      artist.ExternalUrls.Spotify,
-			ImageUrl: getBestImageUrl(respWithImages.Images),
-			Name:     artist.Name,
-		}
+	artistId := resp.Artists[0].Id
+	jsonResponse = sb.getFromApi("https://api.spotify.com/v1/artists/" + artistId)
+	var respWithImages struct {
+		Images []image `json:"images"`
 	}
-	artists := &music_api.Artists{
-		Artists: artistList,
+	json.Unmarshal(jsonResponse, &respWithImages)
+	artistImageUrl := getBestImageUrl(respWithImages.Images)
+
+	artist := &music_api.Artist{
+		Url:      &resp.Artists[0].ExternalUrls.Spotify,
+		ImageUrl: &artistImageUrl,
+		Name:     &resp.Artists[0].Name,
 	}
 
+	year := getYearFromDate(resp.Album.ReleaseDate)
 	album := &music_api.Album{
-		Url:        resp.Album.ExternalUrls.Spotify,
-		ImageUrl:   imageUrl,
-		ArtistUrls: artistUrls,
-		Name:       resp.Album.Name,
-		Year:       getYearFromDate(resp.Album.ReleaseDate),
+		Url:       &resp.Album.ExternalUrls.Spotify,
+		ImageUrl:  &imageUrl,
+		ArtistUrl: artist.Url,
+		Name:      &resp.Album.Name,
+		Year:      &year,
 	}
+
+	durationSeconds := resp.DurationMilliseconds / 1000
 
 	track := &music_api.Track{
-		Url:             url,
-		ImageUrl:        imageUrl,
-		ArtistUrls:      artistUrls,
-		AlbumUrl:        resp.Album.ExternalUrls.Spotify,
-		Name:            resp.Name,
-		DurationSeconds: resp.DurationMilliseconds / 1000,
+		Url:             &url,
+		ImageUrl:        &imageUrl,
+		ArtistUrl:       artist.Url,
+		AlbumUrl:        &resp.Album.ExternalUrls.Spotify,
+		Name:            &resp.Name,
+		DurationSeconds: &durationSeconds,
 	}
 
-	return &music_api.TrackWithAlbumAndArtists{
-		Artists: artists,
-		Album:   album,
-		Track:   track,
+	return &music_api.TrackWithAlbumAndArtist{
+		Artist: artist,
+		Album:  album,
+		Track:  track,
 	}, nil
 }
 
@@ -271,10 +262,12 @@ func (sb *SpotifyBackend) SearchArtists(
 
 	artists := make([]*music_api.Artist, len(searchData.Artists.Items))
 	for i, artist := range searchData.Artists.Items {
+		imageUrl := getBestImageUrl(artist.Images)
+
 		artists[i] = &music_api.Artist{
-			Url:      artist.ExternalUrls.Spotify,
-			ImageUrl: getBestImageUrl(artist.Images),
-			Name:     artist.Name,
+			Url:      &artist.ExternalUrls.Spotify,
+			ImageUrl: &imageUrl,
+			Name:     &artist.Name,
 		}
 	}
 
@@ -308,17 +301,15 @@ func (sb *SpotifyBackend) SearchAlbums(
 
 	albums := make([]*music_api.Album, len(searchData.Albums.Items))
 	for i, album := range searchData.Albums.Items {
-		artistUrls := make([]string, len(album.Artists))
-		for i, artistLink := range album.Artists {
-			artistUrls[i] = artistLink.ExternalUrls.Spotify
-		}
+		imageUrl := getBestImageUrl(album.Images)
+		year := getYearFromDate(album.ReleaseDate)
 
 		albums[i] = &music_api.Album{
-			Url:        album.ExternalUrls.Spotify,
-			ImageUrl:   getBestImageUrl(album.Images),
-			ArtistUrls: artistUrls,
-			Name:       album.Name,
-			Year:       getYearFromDate(album.ReleaseDate),
+			Url:       &album.ExternalUrls.Spotify,
+			ImageUrl:  &imageUrl,
+			ArtistUrl: &album.Artists[0].ExternalUrls.Spotify,
+			Name:      &album.Name,
+			Year:      &year,
 		}
 	}
 

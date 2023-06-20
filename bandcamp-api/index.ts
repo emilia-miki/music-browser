@@ -1,5 +1,16 @@
-import bcfetch from 'bandcamp-fetch';
-import { Server, ServerCredentials, ServerUnaryCall, sendUnaryData } from '@grpc/grpc-js';
+import bcfetch, {
+  Track as TrackInfo,
+  Album as AlbumInfo,
+  Artist as ArtistInfo,
+  Label,
+} from 'bandcamp-fetch';
+import {
+  Server,
+  ServerCredentials,
+  ServerUnaryCall,
+  sendUnaryData
+} from '@grpc/grpc-js';
+
 import { MusicApiService } from '../ts-proto/music_api_grpc_pb';
 import {
   Url,
@@ -15,210 +26,187 @@ import {
   Tracks,
 } from '../ts-proto/music_api_pb';
 
-function getArtist(url: string): Promise<ArtistWithAlbums> {
-  return new Promise(resolve => {
-    bandcamp.getArtistInfo(url, (_: any, data: any) => {
-      const imageUrl = data.coverImage;
-      const name = data.name;
+function parseArtist(
+  artistInfo: Omit<ArtistInfo, "type"> | Omit<Label, "type">,
+): Artist {
+  const artist = new Artist();
 
-      const artist = new Artist();
-      artist.setUrl(url);
-      artist.setImageUrl(imageUrl);
-      artist.setName(name);
+  if (artistInfo.url) {
+    artist.setUrl(artistInfo.url);
+  }
 
-      const albums = new Albums();
-      Promise.all(
-        data.albums.map((album: any) => getAlbumWithoutTracks(album.url))
-      ).then(albumsList => {
-        albums.setAlbumsList(albumsList);
+  if (artistInfo.imageUrl) {
+    artist.setImageUrl(artistInfo.imageUrl);
+  }
 
-        const result = new ArtistWithAlbums();
-        result.setArtist(artist);
-        result.setAlbums(albums);
+  artist.setName(artistInfo.name);
 
-        resolve(result);
-      });
-    });
-  });
+  return artist;
 }
 
-function getAlbum(url: string): Promise<AlbumWithTracks> {
-  return new Promise((resolve) => {
-    bandcamp.getAlbumInfo(url, (_: any, data: any) => {
-      const imageUrl = data.imageUrl;
-      const artistUrl = extractArtistUrl(url);
-      const name = data.title;
-      const dateString = data.raw.album_release_date;
-      const year = dateToYear(dateString);
+function parseAlbum(albumInfo: Omit<AlbumInfo, "type">): Album {
+  const album = new Album();
 
-      const album = new Album();
-      album.setUrl(url);
-      album.setImageUrl(imageUrl);
-      album.setName(name);
-      album.setYear(year);
-      album.setArtistUrl(artistUrl);
+  if (albumInfo.url) {
+    album.setUrl(albumInfo.url)
+  }
 
-      const albumUrl = url;
-      const tracks = new Tracks();
-      tracks.setTracksList(data.tracks.map((data: any) => {
-        const url = data.url;
-        const name = data.name;
-        const duration = durationToSeconds(data.duration);
+  if (albumInfo.imageUrl) {
+    album.setImageUrl(albumInfo.imageUrl);
+  }
 
-        const track = new Track();
-        track.setUrl(url);
-        track.setImageUrl(imageUrl);
-        track.setArtistUrl(artistUrl);
-        track.setAlbumUrl(albumUrl);
-        track.setName(name);
-        track.setDurationSeconds(duration);
-        return track;
-      }));
+  if (albumInfo.artist?.url) {
+    album.setArtistUrl(albumInfo.artist.url);
+  }
 
-      const result = new AlbumWithTracks();
-      result.setAlbum(album);
-      result.setTracks(tracks);
+  album.setName(albumInfo.name);
 
-      resolve(result);
-    });
-  });
+  if (albumInfo.releaseDate) {
+    const year = parseInt(albumInfo.releaseDate.split(" ")[2]);
+    album.setYear(year);
+  }
+
+  return album;
 }
 
-function getTrack(url: string): Promise<TrackWithAlbumAndArtist> {
-  return new Promise(resolve => {
-    bandcamp.getTrackInfo(url, (_: any, data: any) => {
-      const artistUrl = extractArtistUrl(url);
-      const albumUrl = data.raw.album_url;
-      const name = data.title;
-      const durationFloat = data.raw.trackinfo[0].duration;
-      const duration = Math.round(durationFloat);
+function parseTrack(trackInfo: Omit<TrackInfo, "type">): Track {
+  const track = new Track();
 
-      const promise = async function() {
-        const artist = await getArtistWithoutAlbums(artistUrl);
+  if (trackInfo.url) {
+    track.setUrl(trackInfo.url);
+  }
 
-        const album = await getAlbumWithoutTracks(albumUrl);
+  if (trackInfo.imageUrl) {
+    track.setImageUrl(trackInfo.imageUrl);
+  }
 
-        const track = new Track();
-        track.setUrl(url);
+  if (trackInfo.artist?.url) {
+    track.setArtistUrl(trackInfo.artist.url);
+  }
 
-        const imageUrl = album.getImageUrl();
-        if (imageUrl) {
-          track.setImageUrl(imageUrl);
+  if (trackInfo.album?.url) {
+    track.setAlbumUrl(trackInfo.album.url);
+  }
+
+  track.setName(trackInfo.name);
+
+  if (trackInfo.duration) {
+    track.setDurationSeconds(Math.round(trackInfo.duration));
+  }
+
+  return track;
+}
+
+async function getArtist(url: string): Promise<ArtistWithAlbums> {
+  const artistInfo = await bcfetch.band.getInfo({ bandUrl: url });
+
+  const artistWithAlbums = new ArtistWithAlbums();
+
+  const artist = parseArtist(artistInfo);
+  artistWithAlbums.setArtist(artist);
+
+  const albumsInfo = await bcfetch.band.getDiscography({ bandUrl: url });
+  const albums = new Albums();
+  const albumsList = await Promise.all(albumsInfo
+    .filter((info): info is AlbumInfo => !!info)
+    .map(async info => {
+      if (info.url) {
+        const albumInfo = await bcfetch.album.getInfo({ albumUrl: info.url });
+        return parseAlbum(albumInfo);
+      } else {
+        return parseAlbum(info);
+      }
+    }));
+  albums.setAlbumsList(albumsList);
+  artistWithAlbums.setAlbums(albums);
+
+  return artistWithAlbums;
+}
+
+async function getAlbum(url: string): Promise<AlbumWithTracks> {
+  const albumInfo = await bcfetch.album.getInfo({ albumUrl: url });
+
+  const albumWithTracks = new AlbumWithTracks();
+
+  const album = parseAlbum(albumInfo);
+  albumWithTracks.setAlbum(album);
+
+  const tracks = new Tracks();
+  const tracksList = albumInfo.tracks
+    ? albumInfo.tracks.map(trackInfo => {
+      trackInfo.imageUrl = albumInfo.imageUrl;
+      trackInfo.artist = { url: albumInfo.artist?.url, name: "" };
+      trackInfo.album = { url, name: "" };
+      return parseTrack(trackInfo);
+    })
+    : new Array<Track>();
+  tracks.setTracksList(tracksList);
+  albumWithTracks.setTracks(tracks);
+
+  return albumWithTracks;
+}
+
+async function getTrack(url: string): Promise<TrackWithAlbumAndArtist> {
+  const trackInfo = await bcfetch.track.getInfo({ trackUrl: url });
+
+  const trackWithAlbumAndArtist = new TrackWithAlbumAndArtist();
+
+  const track = parseTrack(trackInfo);
+  trackWithAlbumAndArtist.setTrack(track);
+
+  let album = new Album();
+  const albumUrl = track.getAlbumUrl();
+  if (albumUrl) {
+    const albumInfo = await bcfetch.album.getInfo({ albumUrl });
+    album = parseAlbum(albumInfo);
+
+    if (albumInfo.tracks) {
+      for (let i = 0; i < albumInfo.tracks.length; i++) {
+        const info = albumInfo.tracks[i];
+        if (trackInfo.url && info.url === trackInfo.url) {
+          if (info.duration) {
+            track.setDurationSeconds(Math.round(info.duration));
+          }
         }
+      }
+    }
+  }
+  trackWithAlbumAndArtist.setAlbum(album);
 
-        track.setArtistUrl(artistUrl);
-        track.setAlbumUrl(albumUrl);
-        track.setName(name);
-        track.setDurationSeconds(duration);
+  let artist = new Artist();
+  const artistUrl = track.getArtistUrl();
+  if (artistUrl) {
+    const artistInfo = await bcfetch.band.getInfo({ bandUrl: artistUrl });
+    artist = parseArtist(artistInfo);
+  }
+  trackWithAlbumAndArtist.setArtist(artist);
 
-
-        const result = new TrackWithAlbumAndArtist();
-        result.setArtist(artist);
-        result.setAlbum(album);
-        result.setTrack(track);
-        
-        return result;
-      };
-
-      promise().then(result => resolve(result));
-    });
-  });
+  return trackWithAlbumAndArtist;
 }
 
-function searchArtists(query: string): Promise<Artists> {
-  const params = {
-    query: query,
-    age: 1,
-  };
+async function searchArtists(query: string): Promise<Artists> {
+  const results = await bcfetch.search.artistsAndLabels({ query });
 
-  return new Promise(resolve => {
-    bandcamp.search(params, (_: any, data: any) => {
-      const items = data
-        .filter((item: any) => item.type === "artist")
-        .map((data: any) => getArtist(data.url));
+  const artists = new Artists();
 
-      const result = new Artists();
-      Promise.all(items).then(artistsList => {
-        result.setArtistsList(artistsList);
+  const artistsList = results.items.map(result => parseArtist(result));
+  artists.setArtistsList(artistsList);
 
-        resolve(result);
-      })
-    });
-  });
+  return artists;
 }
 
-function searchAlbums(query: string): Promise<Albums> {
-  const params = {
-    query: query,
-    age: 1,
-  };
+async function searchAlbums(query: string): Promise<Albums> {
+  const results = await bcfetch.search.albums({ query });
 
-  return new Promise(resolve => {
-    bandcamp.search(params, (_: any, data: any) => {
-      const items = data
-        .filter((item: any) => item.type === "album")
-        .map((data: any) => getAlbum(data.url));
+  const albums = new Albums();
 
-      const result = new Albums();
-      Promise.all(items).then(albumsList => {
-        result.setAlbumsList(albumsList);
+  const albumsList = await Promise.all(results.items.map(async result => {
+    const albumInfo = await bcfetch.album.getInfo({ albumUrl: result.url });
+    return parseAlbum(albumInfo);
+  }));
+  albums.setAlbumsList(albumsList);
 
-        resolve(result);
-      });
-    });
-  });
-}
-
-function getArtistWithoutAlbums(url: string): Promise<Artist> {
-  return new Promise(resolve => {
-    bandcamp.getArtistInfo(url, (_: any, data: any) => {
-      const imageUrl = data.coverImage;
-      const name = data.name;
-
-      const result = new Artist();
-      result.setUrl(url);
-      result.setImageUrl(imageUrl);
-      result.setName(name);
-
-      resolve(result);
-    });
-  });
-}
-
-function getAlbumWithoutTracks(url: string): Promise<Album> {
-  return new Promise(resolve => {
-    bandcamp.getAlbumInfo(url, (_: any, data: any) => {
-      const imageUrl = data.imageUrl;
-      const artistUrl = extractArtistUrl(url);
-      const name = data.title;
-      const dateString = data.raw.album_release_date;
-      const year = dateToYear(dateString);
-
-      const result = new Album();
-      result.setUrl(url);
-      result.setImageUrl(imageUrl);
-      result.setArtistUrl(artistUrl);
-      result.setName(name);
-      result.setYear(year);
-
-      resolve(result);
-    });
-  });
-}
-
-function durationToSeconds(duration: string): number {
-  const splits = duration.split(':');
-  const minutes = parseInt(splits[0]);
-  const seconds = parseInt(splits[1]);
-  return minutes * 60 + seconds;
-}
-
-function dateToYear(date: string): number {
-  return parseInt(date.split(" ")[2]);
-}
-
-function extractArtistUrl(url: string): string {
-  return url.split('/').slice(0, -2).join('/');
+  return albums;
 }
 
 const BandcampApiServer = {

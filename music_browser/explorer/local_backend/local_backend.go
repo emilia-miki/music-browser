@@ -39,7 +39,7 @@ func (lb *LocalBackend) GetAlbum(
 
 func (lb *LocalBackend) GetTrack(
 	url string,
-) (*music_api.TrackWithAlbumAndArtists, error) {
+) (*music_api.TrackWithAlbumAndArtist, error) {
 	return nil, nil
 }
 

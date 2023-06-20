@@ -16,4 +16,5 @@ npx grpc_tools_node_protoc \
   -I../ \
   music_api.proto
 
-sed -i '' 's#^import \* as grpc from "grpc";$#import * as grpc from "@grpc/grpc-js";#' music_api_grpc_pb.d.ts
+sed -ie 's/^import \* as grpc from "grpc";$/import * as grpc from "@grpc\/grpc-js";/' music_api_grpc_pb.d.ts
+sed -ie "s/^var grpc = require('grpc');\$/var grpc = require('@grpc\/grpc-js');/" music_api_grpc_pb.js

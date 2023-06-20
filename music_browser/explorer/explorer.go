@@ -24,7 +24,7 @@ const TTL = time.Duration(TTL_SECONDS) * time.Second
 type Backend interface {
 	GetArtist(url string) (*music_api.ArtistWithAlbums, error)
 	GetAlbum(url string) (*music_api.AlbumWithTracks, error)
-	GetTrack(url string) (*music_api.TrackWithAlbumAndArtists, error)
+	GetTrack(url string) (*music_api.TrackWithAlbumAndArtist, error)
 
 	SearchArtists(query string) (*music_api.Artists, error)
 	SearchAlbums(query string) (*music_api.Albums, error)
@@ -276,7 +276,7 @@ func (e *Explorer) GetAlbum(
 
 func (e *Explorer) GetTrack(
 	url string,
-) (*music_api.TrackWithAlbumAndArtists, error) {
+) (*music_api.TrackWithAlbumAndArtist, error) {
 	backendName := extractBackendNameFromUrl(url)
 	log.Println("backend " + backendName)
 	backend := e.backends[backendName]
@@ -288,7 +288,7 @@ func (e *Explorer) GetTrack(
 	).Result()
 
 	if err == nil {
-		var track *music_api.TrackWithAlbumAndArtists
+		var track *music_api.TrackWithAlbumAndArtist
 		err = proto.Unmarshal([]byte(str), track)
 		if err != nil {
 			return nil, err
@@ -413,10 +413,10 @@ func (e *Explorer) SearchAlbums(
 }
 
 func (e *Explorer) DownloadTrack(
-	track *music_api.TrackWithAlbumAndArtists,
+	track *music_api.TrackWithAlbumAndArtist,
 ) error {
 	cmd := exec.Command("yt-dlp",
-		track.Track.Url, "-x", "--audio-format", "opus", "--write-thumbnail")
+		*track.Track.Url, "-x", "--audio-format", "opus", "--write-thumbnail")
 	out, err := cmd.Output()
 	if err != nil {
 		return err
@@ -460,12 +460,10 @@ func (e *Explorer) DownloadTrack(
 		return err
 	}
 
-	for _, artist := range track.Artists.Artists {
-		_, err = tx.Stmt(e.insertArtistStmt).Exec(
-			artist.Url, artist.ImageUrl, artist.Name)
-		if err != nil {
-			return err
-		}
+	_, err = tx.Stmt(e.insertArtistStmt).Exec(
+		track.Artist.Url, track.Artist.ImageUrl, track.Artist.Name)
+	if err != nil {
+		return err
 	}
 
 	_, err = tx.Stmt(e.insertAlbumStmt).Exec(
@@ -475,12 +473,10 @@ func (e *Explorer) DownloadTrack(
 		return err
 	}
 
-	for _, artist := range track.Artists.Artists {
-		_, err = tx.Stmt(e.insertArtistAlbumStmt).Exec(
-			artist.Url, track.Album.Url)
-		if err != nil {
-			return err
-		}
+	_, err = tx.Stmt(e.insertArtistAlbumStmt).Exec(
+		track.Artist.Url, track.Album.Url)
+	if err != nil {
+		return err
 	}
 
 	_, err = tx.Stmt(e.insertTrackStmt).Exec(
@@ -490,12 +486,10 @@ func (e *Explorer) DownloadTrack(
 		return err
 	}
 
-	for _, artist := range track.Artists.Artists {
-		_, err = tx.Stmt(e.insertArtistTrackStmt).Exec(
-			artist.Url, track.Track.Url)
-		if err != nil {
-			return err
-		}
+	_, err = tx.Stmt(e.insertArtistTrackStmt).Exec(
+		track.Artist.Url, track.Track.Url)
+	if err != nil {
+		return err
 	}
 
 	_, err = tx.Stmt(e.insertAlbumTrackStmt).Exec(

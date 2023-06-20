@@ -72,7 +72,7 @@ func (gb *GrpcBackend) GetAlbum(
 
 func (gb *GrpcBackend) GetTrack(
 	url string,
-) (*music_api.TrackWithAlbumAndArtists, error) {
+) (*music_api.TrackWithAlbumAndArtist, error) {
 	log.Println("Getting track " + url + "!!!!!11111")
 	result, err := gb.client.GetTrack(
 		context.Background(),
