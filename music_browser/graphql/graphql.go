@@ -1,57 +1,30 @@
 package graphql
 
 import (
-	"github.com/emilia-miki/music-browser/music_browser/backend"
+	"github.com/emilia-miki/music-browser/music_browser/explorer"
 	"github.com/graphql-go/graphql"
 )
 
-var Backends map[string]backend.MusicExplorer
-
-var backendEnum = graphql.NewEnum(graphql.EnumConfig{
-	Name: "Backend",
-	Values: graphql.EnumValueConfigMap{
-		"SPOTIFY":  &graphql.EnumValueConfig{Value: "spotify"},
-		"BANDCAMP": &graphql.EnumValueConfig{Value: "bandcamp"},
-		"YT_MUSIC": &graphql.EnumValueConfig{Value: "yt-music"},
-		"LOCAL":    &graphql.EnumValueConfig{Value: "local"},
-	},
-})
-
-var artistLinkType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "ArtistLink",
+var artistType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Artist",
 	Fields: graphql.Fields{
-		"name": &graphql.Field{
+		"url": &graphql.Field{
 			Type: graphql.String,
 		},
-		"url": &graphql.Field{
+		"image_url": &graphql.Field{
+			Type: graphql.String,
+		},
+		"name": &graphql.Field{
 			Type: graphql.String,
 		},
 	},
 })
 
-var trackType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Track",
+var artistsType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Artists",
 	Fields: graphql.Fields{
-		"name": &graphql.Field{
-			Type: graphql.String,
-		},
-		"url": &graphql.Field{
-			Type: graphql.String,
-		},
-		"imageUrl": &graphql.Field{
-			Type: graphql.String,
-		},
-		"durationSeconds": &graphql.Field{
-			Type: graphql.Int,
-		},
-		"album": &graphql.Field{
-			Type: graphql.String,
-		},
-		"albumUrl": &graphql.Field{
-			Type: graphql.String,
-		},
 		"artists": &graphql.Field{
-			Type: graphql.NewList(artistLinkType),
+			Type: graphql.NewList(artistType),
 		},
 	},
 })
@@ -59,92 +32,177 @@ var trackType = graphql.NewObject(graphql.ObjectConfig{
 var albumType = graphql.NewObject(graphql.ObjectConfig{
 	Name: "Album",
 	Fields: graphql.Fields{
-		"name": &graphql.Field{
-			Type: graphql.String,
-		},
 		"url": &graphql.Field{
 			Type: graphql.String,
 		},
-		"imageUrl": &graphql.Field{
+		"image_url": &graphql.Field{
+			Type: graphql.String,
+		},
+		"artist_urls": &graphql.Field{
+			Type: graphql.NewList(graphql.String),
+		},
+		"name": &graphql.Field{
 			Type: graphql.String,
 		},
 		"year": &graphql.Field{
 			Type: graphql.Int,
 		},
-		"durationSeconds": &graphql.Field{
-			Type: graphql.Int,
-		},
-		"tracks": &graphql.Field{
-			Type: graphql.NewList(trackType),
-		},
-		"artists": &graphql.Field{
-			Type: graphql.NewList(artistLinkType),
+	},
+})
+
+var albumsType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Albums",
+	Fields: graphql.Fields{
+		"albums": &graphql.Field{
+			Type: graphql.NewList(albumType),
 		},
 	},
 })
 
-var artistType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Artist",
+var trackType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Track",
 	Fields: graphql.Fields{
-		"name": &graphql.Field{
-			Type: graphql.String,
-		},
 		"url": &graphql.Field{
 			Type: graphql.String,
 		},
-		"imageUrl": &graphql.Field{
+		"image_url": &graphql.Field{
 			Type: graphql.String,
 		},
-		"albums": &graphql.Field{
-			Type: graphql.NewList(albumType),
+		"artist_urls": &graphql.Field{
+			Type: graphql.NewList(graphql.String),
+		},
+		"album_url": &graphql.Field{
+			Type: graphql.String,
+		},
+		"name": &graphql.Field{
+			Type: graphql.String,
+		},
+		"duration_seconds": &graphql.Field{
+			Type: graphql.Int,
 		},
 	},
 })
 
-var queryType = graphql.NewObject(graphql.ObjectConfig{
-	Name: "Query",
+var tracksType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "Tracks",
 	Fields: graphql.Fields{
-		"artists": &graphql.Field{
-			Type: graphql.NewList(artistType),
-			Args: graphql.FieldConfigArgument{
-				"backend": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(backendEnum),
-				},
-				"query": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				backend := Backends[p.Args["backend"].(string)]
-				query := p.Args["query"].(string)
-				artists := backend.SearchArtists(query)
-				return artists, nil
-			},
-		},
-		"albums": &graphql.Field{
-			Type: graphql.NewList(albumType),
-			Args: graphql.FieldConfigArgument{
-				"backend": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(backendEnum),
-				},
-				"query": &graphql.ArgumentConfig{
-					Type: graphql.NewNonNull(graphql.String),
-				},
-			},
-			Resolve: func(p graphql.ResolveParams) (interface{}, error) {
-				backend := Backends[p.Args["backend"].(string)]
-				query := p.Args["query"].(string)
-				albums := backend.SearchAlbums(query)
-				return albums, nil
-			},
+		"tracks": &graphql.Field{
+			Type: graphql.NewList(trackType),
 		},
 	},
 })
 
-func GetSchema(backends map[string]backend.MusicExplorer) graphql.Schema {
-	schema, _ := graphql.NewSchema(graphql.SchemaConfig{
-		Query: queryType,
+var artistWithAlbumsType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "ArtistWithAlbums",
+	Fields: graphql.Fields{
+		"artist": &graphql.Field{
+			Type: artistType,
+		},
+		"albums": &graphql.Field{
+			Type: albumsType,
+		},
+	},
+})
+
+var albumWithTracksType = graphql.NewObject(graphql.ObjectConfig{
+	Name: "AlbumWithTracks",
+	Fields: graphql.Fields{
+		"album": &graphql.Field{
+			Type: albumType,
+		},
+		"tracks": &graphql.Field{
+			Type: tracksType,
+		},
+	},
+})
+
+func newQueryObject(explorer *explorer.Explorer) *graphql.Object {
+	return graphql.NewObject(graphql.ObjectConfig{
+		Name: "Query",
+		Fields: graphql.Fields{
+			"getArtist": &graphql.Field{
+				Type: artistWithAlbumsType,
+				Args: graphql.FieldConfigArgument{
+					"url": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					url := p.Args["url"].(string)
+					artist, err := explorer.GetArtist(url)
+					if err != nil {
+						return nil, err
+					}
+
+					return artist, nil
+				},
+			},
+			"getAlbum": &graphql.Field{
+				Type: albumWithTracksType,
+				Args: graphql.FieldConfigArgument{
+					"url": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					url := p.Args["url"].(string)
+					album, err := explorer.GetAlbum(url)
+					if err != nil {
+						return nil, err
+					}
+
+					return album, nil
+				},
+			},
+			"searchArtists": &graphql.Field{
+				Type: graphql.NewList(artistType),
+				Args: graphql.FieldConfigArgument{
+					"backend": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"query": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					backendName := p.Args["backend"].(string)
+					query := p.Args["query"].(string)
+					artists, err := explorer.SearchArtists(backendName, query)
+					if err != nil {
+						return nil, err
+					}
+
+					return artists, nil
+				},
+			},
+			"searchAlbums": &graphql.Field{
+				Type: graphql.NewList(albumType),
+				Args: graphql.FieldConfigArgument{
+					"backend": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+					"query": &graphql.ArgumentConfig{
+						Type: graphql.NewNonNull(graphql.String),
+					},
+				},
+				Resolve: func(p graphql.ResolveParams) (interface{}, error) {
+					backendName := p.Args["backend"].(string)
+					query := p.Args["query"].(string)
+					albums, err := explorer.SearchAlbums(backendName, query)
+					if err != nil {
+						return nil, err
+					}
+
+					return albums, nil
+				},
+			},
+		},
 	})
-	Backends = backends
+}
+
+func NewSchema(explorer *explorer.Explorer) graphql.Schema {
+	schema, _ := graphql.NewSchema(graphql.SchemaConfig{
+		Query: newQueryObject(explorer),
+	})
 	return schema
 }
