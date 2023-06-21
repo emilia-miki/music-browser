@@ -3,6 +3,10 @@ package music_api;
 option go_package="github.com/emilia-miki/music-browser/music_api";
 
 service MusicApi{
+  rpc GetArtist(Url) returns (ArtistWithAlbums) {}
+  rpc GetAlbum(Url) returns (AlbumWithTracks) {}
+  rpc GetTrack(Url) returns (TrackWithAlbumAndArtist) {}
+
   rpc SearchArtists(Query) returns (Artists) {}
   rpc SearchAlbums(Query) returns (Albums) {}
 }
@@ -11,45 +15,57 @@ message Query {
   string query = 1;
 }
 
-message ArtistLink {
-  string name = 1;
-  string url = 2;
-}
-
-message Track {
-  string name = 1;
-  string url = 2;
-  string image_url = 3;
-  uint32 duration_seconds = 4;
-
-  string album = 5;
-  string album_url = 6;
-
-  repeated ArtistLink artists = 7;
-}
-
-message Album {
-  string name = 1;
-  string url = 2;
-  string image_url = 3;
-  uint32 year = 4;
-  uint32 duration_seconds = 5;
-  repeated Track tracks = 6;
-
-  repeated ArtistLink artists = 7;
-}
-
-message Albums {
-  repeated Album items = 1;
+message Url {
+  string url = 1;
 }
 
 message Artist {
-  string name = 1;
-  string url = 2;
-  string image_url = 3;
-  repeated Album albums = 4;
+  optional string url = 1;
+  optional string image_url = 2;
+  optional string name = 3;
 }
 
 message Artists {
-  repeated Artist items = 1;
+  repeated Artist artists = 1;
+}
+
+message Album {
+  optional string url = 1;
+  optional string image_url = 2;
+  optional string artist_url = 3;
+  optional string name = 4;
+  optional uint32 year = 5;
+}
+
+message Albums {
+  repeated Album albums = 1;
+}
+
+message Track {
+  optional string url = 1;
+  optional string image_url = 2;
+  optional string artist_url = 3;
+  optional string album_url = 4;
+  optional string name = 5;
+  optional uint32 duration_seconds = 6;
+}
+
+message Tracks {
+  repeated Track tracks = 1;
+}
+
+message ArtistWithAlbums {
+  Artist artist = 1;
+  Albums albums = 2;
+}
+
+message AlbumWithTracks {
+  Album album = 1;
+  Tracks tracks = 2;
+}
+
+message TrackWithAlbumAndArtist {
+  Artist artist = 1;
+  Album album = 2;
+  Track track = 3;
 }

@@ -1,1 +1,6 @@
 make.sh
+*.js
+*.jse
+*.d.tse
+*.d.ts
+node_modules

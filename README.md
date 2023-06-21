@@ -11,7 +11,7 @@ to the downloaded music.
 What skills are currently demostrated by the application:
 - :white_check_mark: Go
 - :x: SQL
-- :x: Redis
+- :white_check_mark: Redis
 - :white_check_mark: Docker
 - :x: Kubernetes
 - :x: Terraform
