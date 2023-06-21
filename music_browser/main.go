@@ -9,14 +9,15 @@ import (
 	"net/url"
 
 	"github.com/emilia-miki/music-browser/music_browser/backend"
-	"github.com/emilia-miki/music-browser/music_browser/backend/grpc_music_explorer_with_cache"
+	bandcamp_backend "github.com/emilia-miki/music-browser/music_browser/backend/bandcamp"
 	local_backend "github.com/emilia-miki/music-browser/music_browser/backend/local"
 	"github.com/emilia-miki/music-browser/music_browser/backend/music_downloader"
+	"github.com/emilia-miki/music-browser/music_browser/backend/music_explorer_cache"
 	spotify_backend "github.com/emilia-miki/music-browser/music_browser/backend/spotify"
+	yt_music_backend "github.com/emilia-miki/music-browser/music_browser/backend/youtube_music"
 	"github.com/emilia-miki/music-browser/music_browser/environment"
 	graphql_schema "github.com/emilia-miki/music-browser/music_browser/graphql"
 	"github.com/emilia-miki/music-browser/music_browser/music_api"
-	"github.com/go-redis/cache/v9"
 	"github.com/graphql-go/handler"
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
@@ -124,9 +125,7 @@ func main() {
 	}
 	redisClient := redis.NewClient(redisOpt)
 	defer redisClient.Close()
-	cache := cache.New(&cache.Options{
-		Redis: redisClient,
-	})
+	cache := music_explorer_cache.MusicExplorerCache{RedisClient: redisClient}
 
 	spotify = &spotify_backend.MusicExplorer{
 		Cache:   cache,
@@ -141,7 +140,7 @@ func main() {
 	}
 	defer ytMusicApiConn.Close()
 
-	ytMusic = &grpc_music_explorer_with_cache.GrpcMusicExplorerWithCache{
+	ytMusic = &yt_music_backend.MusicExplorer{
 		Cache:  cache,
 		Client: music_api.NewMusicApiClient(ytMusicApiConn),
 	}
@@ -152,7 +151,7 @@ func main() {
 	}
 	defer bandcampApiConn.Close()
 
-	bandcamp = &grpc_music_explorer_with_cache.GrpcMusicExplorerWithCache{
+	bandcamp = &bandcamp_backend.MusicExplorer{
 		Cache:  cache,
 		Client: music_api.NewMusicApiClient(bandcampApiConn),
 	}

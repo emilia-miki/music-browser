@@ -10,9 +10,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/emilia-miki/music-browser/music_browser/backend/music_explorer_cache"
 	"github.com/emilia-miki/music-browser/music_browser/environment"
 	"github.com/emilia-miki/music-browser/music_browser/music_api"
-	"github.com/go-redis/cache/v9"
 )
 
 type image struct {
@@ -201,7 +201,7 @@ type accessToken struct {
 }
 
 type MusicExplorer struct {
-	Cache       *cache.Cache
+	Cache       music_explorer_cache.MusicExplorerCache
 	Secrets     environment.SpotifySecrets
 	accessToken *accessToken
 }
@@ -282,29 +282,11 @@ func (me *MusicExplorer) search(searchType string, query string) searchResponse 
 }
 
 func (me *MusicExplorer) SearchArtists(query string) []*music_api.Artist {
-	artists := new([]*music_api.Artist)
-	me.Cache.Once(&cache.Item{
-		Key:   query,
-		Value: artists,
-		Do: func(item *cache.Item) (interface{}, error) {
-			jsonResponse := me.search("artist", query)
-			return me.mapItemsToArtists(jsonResponse.Artists.Items), nil
-		},
-	})
-
-	return *artists
+	jsonResponse := me.search("artist", query)
+	return me.mapItemsToArtists(jsonResponse.Artists.Items)
 }
 
 func (me *MusicExplorer) SearchAlbums(query string) []*music_api.Album {
-	albums := new([]*music_api.Album)
-	me.Cache.Once(&cache.Item{
-		Key:   query,
-		Value: albums,
-		Do: func(item *cache.Item) (interface{}, error) {
-			jsonResponse := me.search("album", query)
-			return me.mapItemsToAlbums(jsonResponse.Albums.Items), nil
-		},
-	})
-
-	return *albums
+	jsonResponse := me.search("album", query)
+	return me.mapItemsToAlbums(jsonResponse.Albums.Items)
 }
