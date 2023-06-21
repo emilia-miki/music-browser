@@ -6,21 +6,16 @@ RUN apk add \
     go \
     nodejs \
     npm \
-    python3 \
-    py3-pip \
-    build-base \
-    linux-headers \
-    python3-dev \
     ffmpeg \
     yt-dlp \
     && go install google.golang.org/protobuf/cmd/protoc-gen-go@v1.30 \
-    && go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3 \
-    && pip install grpcio-tools
+    && go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3
 
 WORKDIR /app
 COPY music_api.proto .
 COPY database_schema.sql .
 COPY music_browser music_browser
+COPY ts-proto ts-proto
 COPY bandcamp-api bandcamp-api
 COPY yt-music-api yt-music-api
 
@@ -33,8 +28,8 @@ ENV POSTGRES_PORT=3337
 
 RUN cd music_browser && ./build.sh && CGO_ENABLED=0 GOOS=linux go build && cd .. \
 && cd ts-proto && npm install && ./build.sh && cd .. \
-&& cd bandcamp-api && npm install && cd .. \
-&& cd yt_music_api && npm install && cd .. \
+&& cd bandcamp-api && npm install && npx tsc && cd .. \
+&& cd yt-music-api && npm install && npx tsc && cd .. \
 && mkdir /usr/local/pgsql \
 && chown postgres /usr/local/pgsql \
 && su -m postgres -c 'initdb -D /usr/local/pgsql/data -A trust' \
@@ -48,4 +43,3 @@ CMD node bandcamp-api > bandcamp-api/bandcamp-api.log 2>&1 \
 & su -m postgres -c 'pg_ctl start -D /usr/local/pgsql/data -o "-p ${POSTGRES_PORT}"' \
 && psql -p ${POSTGRES_PORT} -U postgres -d postgres -f database_schema.sql \
 && ./music_browser/music_browser
-

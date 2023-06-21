@@ -25,6 +25,10 @@ func (lb *LocalBackend) Close() {
 	lb.pgDB.Close()
 }
 
+func (lb *LocalBackend) String() string {
+	return "local"
+}
+
 func (lb *LocalBackend) GetArtist(
 	url string,
 ) (*music_api.ArtistWithAlbums, error) {

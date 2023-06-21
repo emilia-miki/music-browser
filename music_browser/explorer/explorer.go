@@ -21,7 +21,18 @@ import (
 const TTL_SECONDS = 3600 * 24
 const TTL = time.Duration(TTL_SECONDS) * time.Second
 
+type BackendName = string
+
+const (
+	LocalBackendName    BackendName = "local"
+	SpotifyBackendName              = "spotify"
+	BandcampBackendName             = "bandcamp"
+	YtMusicBackendName              = "yt-music"
+)
+
 type Backend interface {
+	String() string
+
 	GetArtist(url string) (*music_api.ArtistWithAlbums, error)
 	GetAlbum(url string) (*music_api.AlbumWithTracks, error)
 	GetTrack(url string) (*music_api.TrackWithAlbumAndArtist, error)
@@ -31,7 +42,7 @@ type Backend interface {
 }
 
 type Explorer struct {
-	backends map[string]Backend
+	backends map[BackendName]Backend
 
 	redisClient *redis.Client
 	pgDB        *sql.DB
@@ -47,7 +58,7 @@ type Explorer struct {
 }
 
 func New(
-	backends map[string]Backend,
+	backends map[BackendName]Backend,
 	redisConnectionString string,
 	postgresConnectionString string,
 ) (*Explorer, error) {
@@ -164,29 +175,36 @@ func (e *Explorer) Close() error {
 	return nil
 }
 
-func extractBackendNameFromUrl(url string) string {
+func extractBackendName(url string) string {
 	splits := strings.Split(url, "/")
 	if len(splits) < 3 {
-		return "local"
+		return LocalBackendName
 	}
 
 	name := splits[2]
 	if name == "open.spotify.com" {
-		return "spotify"
+		return SpotifyBackendName
 	} else if name == "bandcamp.com" {
-		return "bandcamp"
+		return BandcampBackendName
 	} else if name == "music.youtube.com" {
-		return "yt-music"
+		return BandcampBackendName
 	} else {
-		return "local"
+		return LocalBackendName
 	}
 }
 
 func (e *Explorer) GetArtist(
 	url string,
 ) (*music_api.ArtistWithAlbums, error) {
-	backendName := extractBackendNameFromUrl(url)
-	backend := e.backends[backendName]
+	if url == "" {
+		return nil, errors.New("Empty url")
+	}
+
+	backendName := extractBackendName(url)
+	backend, ok := e.backends[backendName]
+	if !ok {
+		return nil, errors.New("Invalid backend: " + backendName)
+	}
 
 	str, err := e.redisClient.GetEx(
 		context.Background(),
@@ -195,7 +213,7 @@ func (e *Explorer) GetArtist(
 	).Result()
 
 	if err == nil {
-		var artist *music_api.ArtistWithAlbums
+		artist := new(music_api.ArtistWithAlbums)
 		err = proto.Unmarshal([]byte(str), artist)
 		if err != nil {
 			return nil, err
@@ -205,10 +223,12 @@ func (e *Explorer) GetArtist(
 		return nil, err
 	}
 
+	log.Println("gettting artist " + url)
 	artist, err := backend.GetArtist(url)
 	if err != nil {
 		return nil, err
 	}
+	log.Println("got artist " + artist.String())
 
 	bytes, err := proto.Marshal(artist)
 	if err != nil {
@@ -231,8 +251,15 @@ func (e *Explorer) GetArtist(
 func (e *Explorer) GetAlbum(
 	url string,
 ) (*music_api.AlbumWithTracks, error) {
-	backendName := extractBackendNameFromUrl(url)
-	backend := e.backends[backendName]
+	if url == "" {
+		return nil, errors.New("Empty url")
+	}
+
+	backendName := extractBackendName(url)
+	backend, ok := e.backends[backendName]
+	if !ok {
+		return nil, errors.New("Invalid backend: " + backendName)
+	}
 
 	str, err := e.redisClient.GetEx(
 		context.Background(),
@@ -241,7 +268,7 @@ func (e *Explorer) GetAlbum(
 	).Result()
 
 	if err == nil {
-		var album *music_api.AlbumWithTracks
+		album := new(music_api.AlbumWithTracks)
 		err = proto.Unmarshal([]byte(str), album)
 		if err != nil {
 			return nil, err
@@ -277,9 +304,15 @@ func (e *Explorer) GetAlbum(
 func (e *Explorer) GetTrack(
 	url string,
 ) (*music_api.TrackWithAlbumAndArtist, error) {
-	backendName := extractBackendNameFromUrl(url)
-	log.Println("backend " + backendName)
-	backend := e.backends[backendName]
+	if url == "" {
+		return nil, errors.New("Empty url")
+	}
+
+	backendName := extractBackendName(url)
+	backend, ok := e.backends[backendName]
+	if !ok {
+		return nil, errors.New("Invalid backend: " + backendName)
+	}
 
 	str, err := e.redisClient.GetEx(
 		context.Background(),
@@ -288,7 +321,7 @@ func (e *Explorer) GetTrack(
 	).Result()
 
 	if err == nil {
-		var track *music_api.TrackWithAlbumAndArtist
+		track := new(music_api.TrackWithAlbumAndArtist)
 		err = proto.Unmarshal([]byte(str), track)
 		if err != nil {
 			return nil, err
@@ -321,11 +354,19 @@ func (e *Explorer) GetTrack(
 }
 
 func (e *Explorer) SearchArtists(
-	backendName string,
+	backendName BackendName,
 	query string,
 ) (*music_api.Artists, error) {
-	backend := e.backends[backendName]
-	key := fmt.Sprintf("%s:%s", backendName, query)
+	backend, ok := e.backends[backendName]
+	if !ok {
+		return nil, errors.New("Invalid backend: " + backendName)
+	}
+
+	if query == "" {
+		return nil, errors.New("Empty query")
+	}
+
+	key := fmt.Sprintf("%s:artists:%s", backend, query)
 
 	str, err := e.redisClient.GetEx(
 		context.Background(),
@@ -334,7 +375,7 @@ func (e *Explorer) SearchArtists(
 	).Result()
 
 	if err == nil {
-		var artists *music_api.Artists
+		artists := new(music_api.Artists)
 		err = proto.Unmarshal([]byte(str), artists)
 		if err != nil {
 			return nil, err
@@ -347,6 +388,7 @@ func (e *Explorer) SearchArtists(
 	if err != nil {
 		return nil, err
 	}
+	log.Println(artists)
 
 	bytes, err := proto.Marshal(artists)
 	if err != nil {
@@ -367,11 +409,19 @@ func (e *Explorer) SearchArtists(
 }
 
 func (e *Explorer) SearchAlbums(
-	backendName string,
+	backendName BackendName,
 	query string,
 ) (*music_api.Albums, error) {
-	backend := e.backends[backendName]
-	key := fmt.Sprintf("%s:%s", backendName, query)
+	backend, ok := e.backends[backendName]
+	if !ok {
+		return nil, errors.New("Invalid backend: " + backendName)
+	}
+
+	if query == "" {
+		return nil, errors.New("Empty query")
+	}
+
+	key := fmt.Sprintf("%s:albums:%s", backend, query)
 
 	str, err := e.redisClient.GetEx(
 		context.Background(),
@@ -380,7 +430,7 @@ func (e *Explorer) SearchAlbums(
 	).Result()
 
 	if err == nil {
-		var albums *music_api.Albums
+		albums := new(music_api.Albums)
 		err = proto.Unmarshal([]byte(str), albums)
 		if err != nil {
 			return nil, err

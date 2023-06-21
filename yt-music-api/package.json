@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "build": "npx tsc"
+  },
   "devDependencies": {
     "@types/google-protobuf": "^3.15.6",
     "ts-node": "^10.9.1",

@@ -40,6 +40,10 @@ type accessToken struct {
 
 // Public methods of SpotifyBackend
 
+func (sb *SpotifyBackend) String() string {
+	return "spotify"
+}
+
 func (sb *SpotifyBackend) GetArtist(
 	url string,
 ) (*music_api.ArtistWithAlbums, error) {

@@ -3,29 +3,40 @@ package grpc_backend
 import (
 	"context"
 	"log"
+	"time"
 
 	"github.com/emilia-miki/music-browser/music_browser/music_api"
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/connectivity"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 type GrpcBackend struct {
+	name   string
 	conn   *grpc.ClientConn
 	client music_api.MusicApiClient
 }
 
-func New(uri string) (*GrpcBackend, error) {
+func New(name string, uri string) (*GrpcBackend, error) {
 	log.Println(uri)
 	conn, err := grpc.Dial(
 		uri, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		return nil, err
 	}
+	for {
+		if conn.GetState() == connectivity.Ready {
+			break
+		}
+		time.Sleep(time.Second)
+	}
+
 	log.Println(conn)
 
 	client := music_api.NewMusicApiClient(conn)
 	log.Println(client)
 	gb := &GrpcBackend{
+		name:   name,
 		conn:   conn,
 		client: client,
 	}
@@ -34,6 +45,10 @@ func New(uri string) (*GrpcBackend, error) {
 
 func (gb *GrpcBackend) Close() error {
 	return gb.conn.Close()
+}
+
+func (gb *GrpcBackend) String() string {
+	return gb.name
 }
 
 func (gb *GrpcBackend) GetArtist(
@@ -73,7 +88,6 @@ func (gb *GrpcBackend) GetAlbum(
 func (gb *GrpcBackend) GetTrack(
 	url string,
 ) (*music_api.TrackWithAlbumAndArtist, error) {
-	log.Println("Getting track " + url + "!!!!!11111")
 	result, err := gb.client.GetTrack(
 		context.Background(),
 		&music_api.Url{
@@ -92,6 +106,8 @@ func (gb *GrpcBackend) GetTrack(
 func (gb *GrpcBackend) SearchArtists(
 	query string,
 ) (*music_api.Artists, error) {
+	log.Println("search artists")
+	log.Println(gb.client)
 	result, err := gb.client.SearchArtists(
 		context.Background(),
 		&music_api.Query{
