@@ -128,21 +128,23 @@ func main() {
 	backends := make(map[string]explorer.Backend)
 
 	var err error
-	backends["spotify"] = spotify_backend.New(secrets.Spotify)
+	backends[explorer.SpotifyBackendName] = spotify_backend.New(secrets.Spotify)
 	if err != nil {
 		log.Fatal(err)
 	}
-	backends["bandcamp"], err = grpc_backend.New(
+	backends[explorer.BandcampBackendName], err = grpc_backend.New(
+		explorer.BandcampBackendName,
 		fmt.Sprintf("localhost:%d", app.Ports.BandcampAPI))
 	if err != nil {
 		log.Fatal(err)
 	}
-	backends["yt-music"], err = grpc_backend.New(
+	backends[explorer.YtMusicBackendName], err = grpc_backend.New(
+		explorer.YtMusicBackendName,
 		fmt.Sprintf("localhost:%d", app.Ports.YTMusicAPI))
 	if err != nil {
 		log.Fatal(err)
 	}
-	backends["local"], err = local_backend.New(
+	backends[explorer.LocalBackendName], err = local_backend.New(
 		app.ConnectionStrings.PostgreSQL)
 	if err != nil {
 		log.Fatal(err)
