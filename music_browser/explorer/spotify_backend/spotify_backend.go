@@ -187,7 +187,7 @@ func (sb *SpotifyBackend) GetTrack(
 		Artists []struct {
 			ExternalUrls struct {
 				Spotify string `json:"spotify"`
-			} `json:"spotify"`
+			} `json:"external_urls"`
 			Id   string `json:"id"`
 			Name string `json:"name"`
 		} `json:"artists"`
@@ -212,10 +212,12 @@ func (sb *SpotifyBackend) GetTrack(
 		Images []image `json:"images"`
 	}
 	json.Unmarshal(jsonResponse, &respWithImages)
+
+	artistUrl := resp.Artists[0].ExternalUrls.Spotify
 	artistImageUrl := getBestImageUrl(respWithImages.Images)
 
 	artist := &music_api.Artist{
-		Url:      &resp.Artists[0].ExternalUrls.Spotify,
+		Url:      &artistUrl,
 		ImageUrl: &artistImageUrl,
 		Name:     &resp.Artists[0].Name,
 	}
@@ -224,7 +226,7 @@ func (sb *SpotifyBackend) GetTrack(
 	album := &music_api.Album{
 		Url:       &resp.Album.ExternalUrls.Spotify,
 		ImageUrl:  &imageUrl,
-		ArtistUrl: artist.Url,
+		ArtistUrl: &artistUrl,
 		Name:      &resp.Album.Name,
 		Year:      &year,
 	}
@@ -234,7 +236,7 @@ func (sb *SpotifyBackend) GetTrack(
 	track := &music_api.Track{
 		Url:             &url,
 		ImageUrl:        &imageUrl,
-		ArtistUrl:       artist.Url,
+		ArtistUrl:       &artistUrl,
 		AlbumUrl:        &resp.Album.ExternalUrls.Spotify,
 		Name:            &resp.Name,
 		DurationSeconds: &durationSeconds,

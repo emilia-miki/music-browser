@@ -1,6 +1,6 @@
-import * as grpc from '@grpc/grpc-js';
-import { Innertube, YTNodes, YTMusic, Misc } from 'youtubei.js';
-import { MusicApiService } from '../ts-proto/music_api_grpc_pb';
+import * as grpc from "@grpc/grpc-js";
+import { Innertube, YTNodes, YTMusic, Misc } from "youtubei.js";
+import { MusicApiService } from "../ts-proto/music_api_grpc_pb";
 import {
   Url,
   Query,
@@ -13,7 +13,7 @@ import {
   Albums,
   Track,
   Tracks,
-} from '../ts-proto/music_api_pb';
+} from "../ts-proto/music_api_pb";
 
 const YT_MUSIC_BROWSE_BASE_URL = "https://music.youtube.com/browse/";
 const YT_MUSIC_VIDEO_BASE_URL = "https://music.youtube.com/watch?v=";
@@ -35,7 +35,7 @@ function getBestThumbnailUrl(arr: Array<Misc.Thumbnail>): string | null {
 
   let bestUrl = "";
   let bestWidth = 0;
-  arr.forEach(obj => {
+  arr.forEach((obj) => {
     if (obj.width > bestWidth) {
       bestUrl = obj.url;
       bestWidth = obj.width;
@@ -47,7 +47,7 @@ function getBestThumbnailUrl(arr: Array<Misc.Thumbnail>): string | null {
 
 function parseArtistWithAlbums(
   artistData: YTMusic.Artist,
-  artistUrl: string,
+  artistUrl: string
 ): ArtistWithAlbums {
   const artistWithAlbums = new ArtistWithAlbums();
 
@@ -60,7 +60,7 @@ function parseArtistWithAlbums(
   artist.setUrl(artistUrl);
 
   if (!artistData.header.is(YTNodes.MusicHeader)) {
-    const thumbnail = (artistData.header.thumbnail as YTNodes.MusicThumbnail);
+    const thumbnail = artistData.header.thumbnail as YTNodes.MusicThumbnail;
     const imageUrl = getBestThumbnailUrl(thumbnail.contents);
     if (imageUrl) {
       artist.setImageUrl(imageUrl);
@@ -87,12 +87,12 @@ function parseArtistWithAlbums(
       continue;
     }
 
-    albumsData = mcs.contents
-      .filterType(YTNodes.MusicTwoRowItem);
+    albumsData = mcs.contents.filterType(YTNodes.MusicTwoRowItem);
+    break;
   }
 
   if (albumsData) {
-    const albumsList = albumsData.map(data => {
+    const albumsList = albumsData.map((data) => {
       const album = new Album();
 
       if (data.id) {
@@ -127,7 +127,7 @@ function parseArtistWithAlbums(
 
 function parseAlbumWithTracks(
   albumData: YTMusic.Album,
-  albumUrl: string,
+  albumUrl: string
 ): AlbumWithTracks {
   const albumWithTracks = new AlbumWithTracks();
 
@@ -159,7 +159,7 @@ function parseAlbumWithTracks(
 
   const tracks = new Tracks();
 
-  const tracksList = albumData.contents.map(trackData => {
+  const tracksList = albumData.contents.map((trackData) => {
     const track = new Track();
 
     if (trackData.id) {
@@ -209,7 +209,7 @@ function parseTrackWithAlbumAndArtist(
   artistData: YTMusic.Artist | null,
   albumData: YTMusic.Album | null,
   trackData: YTMusic.TrackInfo | null,
-  albumId: string | null,
+  albumId: string | null
 ): TrackWithAlbumAndArtist {
   const trackWithAlbumAndArtist = new TrackWithAlbumAndArtist();
 
@@ -223,12 +223,14 @@ function parseTrackWithAlbumAndArtist(
       artist.setUrl(YT_MUSIC_BROWSE_BASE_URL + artistId);
     }
 
-    if (header.is(YTNodes.MusicImmersiveHeader)
-      || header.is(YTNodes.MusicVisualHeader)) {
+    if (
+      header.is(YTNodes.MusicImmersiveHeader) ||
+      header.is(YTNodes.MusicVisualHeader)
+    ) {
       let imageUrl: string | null = null;
       if (header.thumbnail) {
         if (header.thumbnail instanceof YTNodes.MusicThumbnail) {
-          imageUrl = getBestThumbnailUrl(header.thumbnail.contents)
+          imageUrl = getBestThumbnailUrl(header.thumbnail.contents);
         } else {
           imageUrl = getBestThumbnailUrl(header.thumbnail);
         }
@@ -266,7 +268,7 @@ function parseTrackWithAlbumAndArtist(
     album.setName(header.title.toString());
 
     const year = parseInt(header.year);
-    album.setYear(year)
+    album.setYear(year);
   }
 
   trackWithAlbumAndArtist.setAlbum(album);
@@ -319,7 +321,7 @@ async function createYtMusicApiServer() {
       const artistUrl = call.request.getUrl();
       const artistId = extractId(artistUrl);
 
-      innerTube.music.getArtist(artistId).then(data => {
+      innerTube.music.getArtist(artistId).then((data) => {
         const artistWithAlbums = parseArtistWithAlbums(data, artistUrl);
         callback(null, artistWithAlbums);
       });
@@ -332,7 +334,7 @@ async function createYtMusicApiServer() {
       const albumUrl = call.request.getUrl();
       const albumId = extractId(albumUrl);
 
-      innerTube.music.getAlbum(albumId).then(data => {
+      innerTube.music.getAlbum(albumId).then((data) => {
         const albumWithTracks = parseAlbumWithTracks(data, albumUrl);
         callback(null, albumWithTracks);
       });
@@ -343,9 +345,9 @@ async function createYtMusicApiServer() {
       callback: grpc.sendUnaryData<TrackWithAlbumAndArtist>
     ): void {
       const trackUrl = call.request.getUrl();
-      const trackId = extractId(trackUrl)
+      const trackId = extractId(trackUrl);
 
-      const getPromise = async function() {
+      const getPromise = async function () {
         let artistData: YTMusic.Artist | null = null;
         let albumData: YTMusic.Album | null = null;
         let albumId: string | null = null;
@@ -376,14 +378,17 @@ async function createYtMusicApiServer() {
           }
         }
 
-        const trackWithAlbumAndArtist =
-          parseTrackWithAlbumAndArtist(
-            artistData, albumData, trackData, albumId);
+        const trackWithAlbumAndArtist = parseTrackWithAlbumAndArtist(
+          artistData,
+          albumData,
+          trackData,
+          albumId
+        );
 
         return trackWithAlbumAndArtist;
       };
 
-      getPromise().then(track => callback(null, track));
+      getPromise().then((track) => callback(null, track));
     },
 
     searchArtists(
@@ -392,11 +397,11 @@ async function createYtMusicApiServer() {
     ): void {
       const query = call.request.getQuery();
 
-      innerTube.music.search(query, { type: "artist" }).then(search => {
+      innerTube.music.search(query, { type: "artist" }).then((search) => {
         const artists = new Artists();
         const artistsList: Artist[] = [];
         if (search.artists) {
-          search.artists.contents.forEach(item => {
+          search.artists.contents.forEach((item) => {
             if (item.id && item.name) {
               const artist = new Artist();
 
@@ -415,7 +420,7 @@ async function createYtMusicApiServer() {
             } else {
               return null;
             }
-          })
+          });
         }
 
         artists.setArtistsList(artistsList);
@@ -430,13 +435,13 @@ async function createYtMusicApiServer() {
     ): void {
       const query = call.request.getQuery();
 
-      innerTube.music.search(query, { type: "album" }).then(search => {
+      innerTube.music.search(query, { type: "album" }).then((search) => {
         const albums = new Albums();
         const albumsList: Album[] = [];
         if (search.contents && search.contents[0].contents) {
           search.contents[0].contents
             .filterType(YTNodes.MusicResponsiveListItem)
-            .forEach(item => {
+            .forEach((item) => {
               if (item.id && item.title) {
                 const album = new Album();
 
@@ -450,7 +455,9 @@ async function createYtMusicApiServer() {
                 }
 
                 if (item.author?.channel_id) {
-                  album.setArtistUrl(YT_MUSIC_BROWSE_BASE_URL + item.author?.channel_id)
+                  album.setArtistUrl(
+                    YT_MUSIC_BROWSE_BASE_URL + item.author?.channel_id
+                  );
                 }
 
                 album.setName(item.title);
@@ -462,7 +469,7 @@ async function createYtMusicApiServer() {
 
                 albumsList.push(album);
               }
-            })
+            });
         }
 
         albums.setAlbumsList(albumsList);
@@ -481,15 +488,12 @@ if (require.main === module) {
   }
   const uri = `0.0.0.0:${port}`;
 
-  createYtMusicApiServer().then(YtMusicApiServer => {
+  createYtMusicApiServer().then((YtMusicApiServer) => {
     const server = new grpc.Server();
     server.addService(MusicApiService, YtMusicApiServer as any);
-    server.bindAsync(
-      uri,
-      grpc.ServerCredentials.createInsecure(),
-      () => server.start(),
-    );
-
+    server.bindAsync(uri, grpc.ServerCredentials.createInsecure(), () => {
+      server.start();
+    });
   });
 }
 

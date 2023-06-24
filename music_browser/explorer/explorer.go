@@ -5,7 +5,6 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
-	"log"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -176,18 +175,24 @@ func (e *Explorer) Close() error {
 }
 
 func extractBackendName(url string) string {
-	splits := strings.Split(url, "/")
-	if len(splits) < 3 {
-		return LocalBackendName
+	var trimmedUrl string
+	var found bool
+	trimmedUrl, found = strings.CutPrefix(url, "http://")
+	if !found {
+		trimmedUrl, found = strings.CutPrefix(url, "https://")
+	}
+	if !found {
+		trimmedUrl = url
 	}
 
-	name := splits[2]
+	splits := strings.Split(trimmedUrl, "/")
+	name := splits[0]
 	if name == "open.spotify.com" {
 		return SpotifyBackendName
-	} else if name == "bandcamp.com" {
+	} else if strings.HasSuffix(name, "bandcamp.com") {
 		return BandcampBackendName
 	} else if name == "music.youtube.com" {
-		return BandcampBackendName
+		return YtMusicBackendName
 	} else {
 		return LocalBackendName
 	}
@@ -206,9 +211,10 @@ func (e *Explorer) GetArtist(
 		return nil, errors.New("Invalid backend: " + backendName)
 	}
 
+	key := "artist:" + url
 	str, err := e.redisClient.GetEx(
 		context.Background(),
-		url,
+		key,
 		TTL,
 	).Result()
 
@@ -223,12 +229,10 @@ func (e *Explorer) GetArtist(
 		return nil, err
 	}
 
-	log.Println("gettting artist " + url)
 	artist, err := backend.GetArtist(url)
 	if err != nil {
 		return nil, err
 	}
-	log.Println("got artist " + artist.String())
 
 	bytes, err := proto.Marshal(artist)
 	if err != nil {
@@ -237,7 +241,7 @@ func (e *Explorer) GetArtist(
 
 	err = e.redisClient.SetEx(
 		context.Background(),
-		url,
+		key,
 		string(bytes),
 		TTL,
 	).Err()
@@ -261,9 +265,10 @@ func (e *Explorer) GetAlbum(
 		return nil, errors.New("Invalid backend: " + backendName)
 	}
 
+	key := "album" + url
 	str, err := e.redisClient.GetEx(
 		context.Background(),
-		url,
+		key,
 		TTL,
 	).Result()
 
@@ -290,7 +295,7 @@ func (e *Explorer) GetAlbum(
 
 	err = e.redisClient.SetEx(
 		context.Background(),
-		url,
+		key,
 		string(bytes),
 		TTL,
 	).Err()
@@ -313,6 +318,8 @@ func (e *Explorer) GetTrack(
 	if !ok {
 		return nil, errors.New("Invalid backend: " + backendName)
 	}
+
+	key := "track" + url
 
 	str, err := e.redisClient.GetEx(
 		context.Background(),
@@ -342,7 +349,7 @@ func (e *Explorer) GetTrack(
 
 	err = e.redisClient.SetEx(
 		context.Background(),
-		url,
+		key,
 		string(bytes),
 		TTL,
 	).Err()
@@ -388,7 +395,6 @@ func (e *Explorer) SearchArtists(
 	if err != nil {
 		return nil, err
 	}
-	log.Println(artists)
 
 	bytes, err := proto.Marshal(artists)
 	if err != nil {

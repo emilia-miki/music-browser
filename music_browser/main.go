@@ -16,6 +16,16 @@ import (
 	_ "github.com/lib/pq"
 )
 
+type GetRequestType = string
+
+const (
+	GetRequestSearchArtists GetRequestType = "artists"
+	GetRequestSearchAlbums                 = "albums"
+	GetRequestGetArtist                    = "artist"
+	GetRequestGetAlbum                     = "album"
+	GetRequestGetTrack                     = "track"
+)
+
 type Error struct {
 	Message string
 }
@@ -37,87 +47,172 @@ func sendBadRequestErrorResponse(
 	return nil
 }
 
-func sendOkJsonResponse(response http.ResponseWriter, jsonBytes []byte) {
-	response.WriteHeader(http.StatusOK)
-	response.Write(jsonBytes)
+func sendInternalServerErrorResponse(
+	response http.ResponseWriter, err error,
+) error {
+	errorResponse := Error{Message: err.Error()}
+	jsonBytes, err := json.Marshal(errorResponse)
+	if err != nil {
+		return err
+	}
+
+	response.WriteHeader(http.StatusInternalServerError)
+	_, err = response.Write(jsonBytes)
+	if err != nil {
+		return err
+	}
+
+	log.Println(
+		"sending an InternalServerError response with the following content: " +
+			string(jsonBytes))
+	return nil
+}
+
+func sendOkJsonResponse(response http.ResponseWriter, jsonBytes []byte) error {
+	_, err := response.Write(jsonBytes)
+	if err != nil {
+		return err
+	}
+
+	log.Println("sending an OK response with the following content: " +
+		string(jsonBytes))
+	return nil
 }
 
 func requestHandler(response http.ResponseWriter, request *http.Request) {
+	log.Printf("received a %s request with uri %s\n",
+		request.Method, request.URL.String())
+
 	params := request.URL.Query()
 	if request.Method == "GET" {
 		backendName := params.Get("backend")
-		searchType := params.Get("type")
+		getRequestType := params.Get("type")
 		query := params.Get("query")
 		url := params.Get("url")
 
 		var jsonBytes []byte
-		if searchType == "artists" {
-			artists, err := explorerObj.SearchArtists(backendName, query)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			jsonBytes, err = json.Marshal(artists)
-			if err != nil {
-				log.Fatal(err)
-			}
-		} else if searchType == "albums" {
-			albums, err := explorerObj.SearchAlbums(backendName, query)
-			if err != nil {
-				log.Fatal(err)
-			}
-
-			jsonBytes, err = json.Marshal(albums)
-			if err != nil {
-				log.Fatal(err)
-			}
-		} else if searchType == "artist" {
+		if getRequestType == GetRequestGetArtist {
 			artist, err := explorerObj.GetArtist(url)
 			if err != nil {
-				log.Fatal(err)
+				err = sendInternalServerErrorResponse(response, err)
+				if err != nil {
+					log.Println("ERROR: " + err.Error())
+				}
+				return
 			}
 
 			jsonBytes, err = json.Marshal(artist)
 			if err != nil {
-				log.Fatal(err)
+				err = sendInternalServerErrorResponse(response, err)
+				if err != nil {
+					log.Println("ERROR: " + err.Error())
+				}
+				return
 			}
-		} else if searchType == "album" {
+		} else if getRequestType == GetRequestGetAlbum {
 			album, err := explorerObj.GetAlbum(url)
 			if err != nil {
-				log.Fatal(err)
+				err = sendInternalServerErrorResponse(response, err)
+				if err != nil {
+					log.Println("ERROR: " + err.Error())
+				}
+				return
 			}
 
 			jsonBytes, err = json.Marshal(album)
 			if err != nil {
-				log.Fatal(err)
+				err = sendInternalServerErrorResponse(response, err)
+				if err != nil {
+					log.Println("ERROR: " + err.Error())
+				}
+				return
+			}
+		} else if getRequestType == GetRequestGetTrack {
+			track, err := explorerObj.GetTrack(url)
+			if err != nil {
+				err = sendInternalServerErrorResponse(response, err)
+				if err != nil {
+					log.Println("ERROR: " + err.Error())
+				}
+				return
+			}
+
+			jsonBytes, err = json.Marshal(track)
+			if err != nil {
+				err = sendInternalServerErrorResponse(response, err)
+				if err != nil {
+					log.Println("ERROR: " + err.Error())
+				}
+				return
+			}
+		} else if getRequestType == GetRequestSearchArtists {
+			artists, err := explorerObj.SearchArtists(backendName, query)
+			if err != nil {
+				err = sendInternalServerErrorResponse(response, err)
+				if err != nil {
+					log.Println("ERROR: " + err.Error())
+				}
+				return
+			}
+
+			jsonBytes, err = json.Marshal(artists)
+			if err != nil {
+				err = sendInternalServerErrorResponse(response, err)
+				if err != nil {
+					log.Println("ERROR: " + err.Error())
+				}
+				return
+			}
+		} else if getRequestType == GetRequestSearchAlbums {
+			albums, err := explorerObj.SearchAlbums(backendName, query)
+			if err != nil {
+				err = sendInternalServerErrorResponse(response, err)
+				if err != nil {
+					log.Println("ERROR: " + err.Error())
+				}
+				return
+			}
+
+			jsonBytes, err = json.Marshal(albums)
+			if err != nil {
+				err = sendInternalServerErrorResponse(response, err)
+				if err != nil {
+					log.Println("ERROR: " + err.Error())
+				}
+				return
 			}
 		} else {
 			err := sendBadRequestErrorResponse(response, "Invalid type")
 			if err != nil {
-				log.Fatal(err)
+				log.Println("ERROR: " + err.Error())
 			}
 		}
 
-		sendOkJsonResponse(response, jsonBytes)
+		err := sendOkJsonResponse(response, jsonBytes)
+		if err != nil {
+			log.Println("ERROR: " + err.Error())
+		}
 	} else if request.Method == "POST" {
 		url := params.Get("url")
-		log.Println("the fuck???? " + url)
 		track, err := explorerObj.GetTrack(url)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("ERROR: " + err.Error())
 		}
 
 		err = explorerObj.DownloadTrack(track)
 		if err != nil {
-			log.Fatal(err)
+			log.Println("ERROR: " + err.Error())
 		}
 
-		response.WriteHeader(http.StatusOK)
+		err = sendOkJsonResponse(response, []byte{})
+		if err != nil {
+			log.Println("ERROR: " + err.Error())
+		}
 	} else {
 		err := sendBadRequestErrorResponse(response,
 			"Only GET and POST methods are allowed on this endpoint")
 		if err != nil {
-			log.Fatal(err)
+			log.Println("ERROR: " + err.Error())
 		}
 	}
 }
@@ -130,24 +225,24 @@ func main() {
 	var err error
 	backends[explorer.SpotifyBackendName] = spotify_backend.New(secrets.Spotify)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	backends[explorer.BandcampBackendName], err = grpc_backend.New(
 		explorer.BandcampBackendName,
 		fmt.Sprintf("localhost:%d", app.Ports.BandcampAPI))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	backends[explorer.YtMusicBackendName], err = grpc_backend.New(
 		explorer.YtMusicBackendName,
 		fmt.Sprintf("localhost:%d", app.Ports.YTMusicAPI))
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 	backends[explorer.LocalBackendName], err = local_backend.New(
 		app.ConnectionStrings.PostgreSQL)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	explorerObj, err = explorer.New(
@@ -156,7 +251,7 @@ func main() {
 		app.ConnectionStrings.PostgreSQL,
 	)
 	if err != nil {
-		log.Fatal(err)
+		log.Fatalln(err)
 	}
 
 	http.HandleFunc("/", requestHandler)
@@ -166,7 +261,7 @@ func main() {
 		Pretty: true,
 	}))
 
-	log.Printf("Server listening on port %d\n", app.Ports.Server)
+	fmt.Printf("Server listening on port %d\n", app.Ports.Server)
 	err = http.ListenAndServe(fmt.Sprintf(":%d", app.Ports.Server), nil)
 	if err != nil {
 		log.Fatalf("Unable to start the server on port %d\n", app.Ports.Server)

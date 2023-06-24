@@ -2,6 +2,7 @@ FROM alpine
 RUN apk add \
     redis \
     postgresql \
+    make \
     protoc \
     go \
     nodejs \
@@ -12,6 +13,7 @@ RUN apk add \
     && go install google.golang.org/grpc/cmd/protoc-gen-go-grpc@v1.3
 
 WORKDIR /app
+COPY Makefile .
 COPY music_api.proto .
 COPY database_schema.sql .
 COPY music_browser music_browser
@@ -26,18 +28,15 @@ ENV YT_MUSIC_API_PORT=3335
 ENV REDIS_PORT=3336
 ENV POSTGRES_PORT=3337
 
-RUN cd music_browser && ./build.sh && CGO_ENABLED=0 GOOS=linux go build && cd .. \
-&& cd ts-proto && npm install && ./build.sh && cd .. \
-&& cd bandcamp-api && npm install && npx tsc && cd .. \
-&& cd yt-music-api && npm install && npx tsc && cd .. \
+RUN make \
 && mkdir /usr/local/pgsql \
 && chown postgres /usr/local/pgsql \
 && su -m postgres -c 'initdb -D /usr/local/pgsql/data -A trust' \
 && mkdir -p /run/postgresql \
 && chown postgres /run/postgresql
 
-CMD node bandcamp-api > bandcamp-api/bandcamp-api.log 2>&1 \
-& node yt-music-api > yt-music-api/yt-music-api.log 2>&1 \
+CMD node bandcamp-api \
+& node yt-music-api \
 & redis-server --port $REDIS_PORT --requirepass "" \
 --maxmemory 1gb --maxmemory-policy allkeys-lfu --save "" \
 & su -m postgres -c 'pg_ctl start -D /usr/local/pgsql/data -o "-p ${POSTGRES_PORT}"' \

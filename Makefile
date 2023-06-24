@@ -1,23 +1,20 @@
-.DEFAULT_GOAL := test
+.DEFAULT_GOAL := build
 
 ts-proto:
-	cd ts-proto && npm run build
+	make -C ts-proto
 .PHONY: ts-proto
 
 bandcamp-api: ts-proto
-	cd bandcamp-api && npm run build
+	make -C bandcamp-api
 .PHONY: bandcamp-api
 
 yt-music-api: ts-proto
-	cd yt-music-api && npm run build
+	make -C yt-music-api
 .PHONY: yt-music-api
 
-music-browser: bandcamp-api yt-music-api
-	cd music_browser && go build
-.PHONY: music-browser
+music_browser:
+	make -C music_browser
+.PHONY: music_browser
 
-build: music-browser
+build: bandcamp-api yt-music-api music_browser
 .PHONY: build
-
-test: build
-.PHONY: test

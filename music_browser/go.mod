@@ -5,11 +5,11 @@ go 1.20
 require (
 	github.com/golang/protobuf v1.5.3
 	github.com/graphql-go/graphql v0.8.1
+	github.com/graphql-go/handler v0.2.3
 	github.com/lib/pq v1.10.9
 	github.com/redis/go-redis/v9 v9.0.5
 	google.golang.org/grpc v1.56.1
 	google.golang.org/protobuf v1.30.0
-	github.com/graphql-go/handler v0.2.3
 )
 
 require (

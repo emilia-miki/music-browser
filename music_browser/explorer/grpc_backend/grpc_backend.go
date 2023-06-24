@@ -2,7 +2,6 @@ package grpc_backend
 
 import (
 	"context"
-	"log"
 	"time"
 
 	"github.com/emilia-miki/music-browser/music_browser/music_api"
@@ -18,7 +17,6 @@ type GrpcBackend struct {
 }
 
 func New(name string, uri string) (*GrpcBackend, error) {
-	log.Println(uri)
 	conn, err := grpc.Dial(
 		uri, grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -31,10 +29,7 @@ func New(name string, uri string) (*GrpcBackend, error) {
 		time.Sleep(time.Second)
 	}
 
-	log.Println(conn)
-
 	client := music_api.NewMusicApiClient(conn)
-	log.Println(client)
 	gb := &GrpcBackend{
 		name:   name,
 		conn:   conn,
@@ -96,7 +91,6 @@ func (gb *GrpcBackend) GetTrack(
 	)
 
 	if err != nil {
-		log.Println("memes and memes and memes....")
 		return nil, err
 	}
 
@@ -106,8 +100,6 @@ func (gb *GrpcBackend) GetTrack(
 func (gb *GrpcBackend) SearchArtists(
 	query string,
 ) (*music_api.Artists, error) {
-	log.Println("search artists")
-	log.Println(gb.client)
 	result, err := gb.client.SearchArtists(
 		context.Background(),
 		&music_api.Query{

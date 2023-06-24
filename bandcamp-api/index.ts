@@ -3,15 +3,14 @@ import bcfetch, {
   Album as AlbumInfo,
   Artist as ArtistInfo,
   Label,
-} from 'bandcamp-fetch';
+} from "bandcamp-fetch";
 import {
   Server,
   ServerCredentials,
   ServerUnaryCall,
-  sendUnaryData
-} from '@grpc/grpc-js';
-
-import { MusicApiService } from '../ts-proto/music_api_grpc_pb';
+  sendUnaryData,
+} from "@grpc/grpc-js";
+import { MusicApiService } from "../ts-proto/music_api_grpc_pb";
 import {
   Url,
   Query,
@@ -24,10 +23,10 @@ import {
   Albums,
   Track,
   Tracks,
-} from '../ts-proto/music_api_pb';
+} from "../ts-proto/music_api_pb";
 
 function parseArtist(
-  artistInfo: Omit<ArtistInfo, "type"> | Omit<Label, "type">,
+  artistInfo: Omit<ArtistInfo, "type"> | Omit<Label, "type">
 ): Artist {
   const artist = new Artist();
 
@@ -48,7 +47,7 @@ function parseAlbum(albumInfo: Omit<AlbumInfo, "type">): Album {
   const album = new Album();
 
   if (albumInfo.url) {
-    album.setUrl(albumInfo.url)
+    album.setUrl(albumInfo.url);
   }
 
   if (albumInfo.imageUrl) {
@@ -107,16 +106,18 @@ async function getArtist(url: string): Promise<ArtistWithAlbums> {
 
   const albumsInfo = await bcfetch.band.getDiscography({ bandUrl: url });
   const albums = new Albums();
-  const albumsList = await Promise.all(albumsInfo
-    .filter((info): info is AlbumInfo => !!info)
-    .map(async info => {
-      if (info.url) {
-        const albumInfo = await bcfetch.album.getInfo({ albumUrl: info.url });
-        return parseAlbum(albumInfo);
-      } else {
-        return parseAlbum(info);
-      }
-    }));
+  const albumsList = await Promise.all(
+    albumsInfo
+      .filter((info): info is AlbumInfo => !!info)
+      .map(async (info) => {
+        if (info.url) {
+          const albumInfo = await bcfetch.album.getInfo({ albumUrl: info.url });
+          return parseAlbum(albumInfo);
+        } else {
+          return parseAlbum(info);
+        }
+      })
+  );
   albums.setAlbumsList(albumsList);
   artistWithAlbums.setAlbums(albums);
 
@@ -133,12 +134,12 @@ async function getAlbum(url: string): Promise<AlbumWithTracks> {
 
   const tracks = new Tracks();
   const tracksList = albumInfo.tracks
-    ? albumInfo.tracks.map(trackInfo => {
-      trackInfo.imageUrl = albumInfo.imageUrl;
-      trackInfo.artist = { url: albumInfo.artist?.url, name: "" };
-      trackInfo.album = { url, name: "" };
-      return parseTrack(trackInfo);
-    })
+    ? albumInfo.tracks.map((trackInfo) => {
+        trackInfo.imageUrl = albumInfo.imageUrl;
+        trackInfo.artist = { url: albumInfo.artist?.url, name: "" };
+        trackInfo.album = { url, name: "" };
+        return parseTrack(trackInfo);
+      })
     : new Array<Track>();
   tracks.setTracksList(tracksList);
   albumWithTracks.setTracks(tracks);
@@ -189,7 +190,7 @@ async function searchArtists(query: string): Promise<Artists> {
 
   const artists = new Artists();
 
-  const artistsList = results.items.map(result => parseArtist(result));
+  const artistsList = results.items.map((result) => parseArtist(result));
   artists.setArtistsList(artistsList);
 
   return artists;
@@ -200,10 +201,12 @@ async function searchAlbums(query: string): Promise<Albums> {
 
   const albums = new Albums();
 
-  const albumsList = await Promise.all(results.items.map(async result => {
-    const albumInfo = await bcfetch.album.getInfo({ albumUrl: result.url });
-    return parseAlbum(albumInfo);
-  }));
+  const albumsList = await Promise.all(
+    results.items.map(async (result) => {
+      const albumInfo = await bcfetch.album.getInfo({ albumUrl: result.url });
+      return parseAlbum(albumInfo);
+    })
+  );
   albums.setAlbumsList(albumsList);
 
   return albums;
@@ -214,42 +217,41 @@ const BandcampApiServer = {
     call: ServerUnaryCall<Url, ArtistWithAlbums>,
     callback: sendUnaryData<ArtistWithAlbums>
   ) {
-    getArtist(call.request.getUrl())
-      .then(artist => callback(null, artist));
+    getArtist(call.request.getUrl()).then((artist) => callback(null, artist));
   },
 
   getAlbum(
     call: ServerUnaryCall<Url, AlbumWithTracks>,
     callback: sendUnaryData<AlbumWithTracks>
   ) {
-    getAlbum(call.request.getUrl())
-      .then(album => callback(null, album));
+    getAlbum(call.request.getUrl()).then((album) => callback(null, album));
   },
 
   getTrack(
     call: ServerUnaryCall<Url, TrackWithAlbumAndArtist>,
     callback: sendUnaryData<TrackWithAlbumAndArtist>
   ) {
-    getTrack(call.request.getUrl())
-      .then(track => callback(null, track));
+    getTrack(call.request.getUrl()).then((track) => callback(null, track));
   },
 
   searchArtists(
     call: ServerUnaryCall<Query, Artists>,
     callback: sendUnaryData<Artists>
   ) {
-    searchArtists(call.request.getQuery())
-      .then(artists => callback(null, artists));
+    searchArtists(call.request.getQuery()).then((artists) =>
+      callback(null, artists)
+    );
   },
 
   searchAlbums(
     call: ServerUnaryCall<Query, Albums>,
     callback: sendUnaryData<Albums>
   ) {
-    searchAlbums(call.request.getQuery())
-      .then(albums => callback(null, albums));
+    searchAlbums(call.request.getQuery()).then((albums) =>
+      callback(null, albums)
+    );
   },
-}
+};
 
 if (require.main == module) {
   const port = process.env.BANDCAMP_API_PORT;
@@ -261,11 +263,9 @@ if (require.main == module) {
 
   var server = new Server();
   server.addService(MusicApiService, BandcampApiServer);
-  server.bindAsync(
-    uri,
-    ServerCredentials.createInsecure(),
-    () => server.start()
-  );
+  server.bindAsync(uri, ServerCredentials.createInsecure(), () => {
+    server.start();
+  });
 }
 
 module.exports = BandcampApiServer;
