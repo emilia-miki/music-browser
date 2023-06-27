@@ -21,10 +21,10 @@ What skills are currently demostrated by the application:
 - :white_check_mark: gRPC
 
 Additionally:
-- :white_check_mark: Python and NodeJS scripting
+- :white_check_mark: NodeJS scripting
 
-What else doesn't work yet:
-- :x: Downloading and exploring music locally
+What doesn't work yet:
+- :x: Exploring music locally
 
 You can build this app by running 
 ```
@@ -46,22 +46,20 @@ Then you can send requests to the application like so:
 > curl --request GET -G \
 --url 'localhost:3333' \
 --data-urlencode backend=yt-music \
---data-urlencode search-type=artist \
---data-urlencode 'query=Ne Obliviscaris' \
-| python3 -m json.tool
+--data-urlencode type=artist \
+--data-urlencode 'query=Ne Obliviscaris'
 ```
-Piping to python3 -m json.tool just formats the JSON, because the application
-returns it minified by default. 
+I recommend piping the response to some json formatting tool, as the response
+is minified by default.
 
 Possible backend values: spotify, bandcamp, yt-music, local.
-Possible search-type values: album, artist.
+Possible type values: artists, albums.
 
 Or a POST request to download a song:
 ```
 > curl --request POST -G \
 --url 'localhost:3333' \
---data-urlencode url='https://dreamcatalogue.bandcamp.com/track/--436' \
-| python3 -m json.tool
+--data-urlencode url='https://dreamcatalogue.bandcamp.com/track/--436'
 ```
 
 There is also a working GraphQL endpoint at localhost:3333/graphql.
