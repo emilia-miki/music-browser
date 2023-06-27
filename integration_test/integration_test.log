@@ -1,0 +1,866 @@
+INFO: 2023/06/27 13:10:47 Building the image with podman
+INFO: 2023/06/27 13:12:06 Starting the container
+INFO: 2023/06/27 13:12:06 The command sh -c "podman ps | tail -1 | cut -d ' ' -f 1" returned CONTAINER
+INFO: 2023/06/27 13:12:08 Running tests
+INFO: 2023/06/27 13:12:08 Testing GET(backend="spotify", query="Ne Obliviscaris", type="artists")
+INFO: 2023/06/27 13:12:08 Backend response:
+{
+	"artists": [
+		{
+			"url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+			"image_url": "https://i.scdn.co/image/ab6761610000e5eb8f11736777f5cc23c1e33d0d",
+			"name": "Ne Obliviscaris"
+		}
+	]
+}
+INFO: 2023/06/27 13:12:08 Testing GET(backend="yt-music", query="Ne Obliviscaris", type="artists")
+INFO: 2023/06/27 13:12:09 Backend response:
+{
+	"artists": [
+		{
+			"url": "https://music.youtube.com/browse/UCevRJ36hDdpdG_4ujQfXfOA",
+			"image_url": "https://lh3.googleusercontent.com/oU7DDOHPuYAi5hCAgMzr2zXwL_qMgiUx_YbYbB_ONzi6fgTJxzvHk4Aeof5OVYSlTK5hktdLSycwx08=w120-h120-p-l90-rj",
+			"name": "Ne Obliviscaris"
+		}
+	]
+}
+INFO: 2023/06/27 13:12:09 Testing GET(backend="bandcamp", query="Death", type="artists")
+INFO: 2023/06/27 13:12:10 Backend response:
+{
+	"artists": [
+		{
+			"url": "https://death.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0000044294_21.jpg",
+			"name": "Death"
+		},
+		{
+			"url": "https://deathprayerrecords.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0030141352_21.jpg",
+			"name": "Death Prayer Records"
+		},
+		{
+			"url": "https://deathsdynamicshroud.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0028663611_21.jpg",
+			"name": "death's dynamic shroud"
+		},
+		{
+			"url": "https://deathcabforcutie.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0028647278_21.jpg",
+			"name": "Death Cab for Cutie"
+		},
+		{
+			"url": "https://stoned-to-death.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0032175270_21.jpg",
+			"name": "Stoned To Death"
+		},
+		{
+			"url": "https://murderbydeath.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0013724287_21.jpg",
+			"name": "Murder By Death"
+		},
+		{
+			"url": "https://napalmdeath.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0007302596_21.jpg",
+			"name": "Napalm Death"
+		},
+		{
+			"url": "https://greetdeath.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0025711733_21.jpg",
+			"name": "Greet Death"
+		},
+		{
+			"url": "https://deathisnot.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0021727020_21.jpg",
+			"name": "Death Is Not The End"
+		},
+		{
+			"url": "https://mapledeathrecords.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0004136996_21.jpg",
+			"name": "Maple Death Records"
+		},
+		{
+			"url": "https://creepingdeathtx.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0031842674_21.jpg",
+			"name": "Creeping Death"
+		},
+		{
+			"url": "https://lifeanddeathforever.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0011351184_21.jpg",
+			"name": "Life And Death"
+		},
+		{
+			"url": "https://deathvalleygirls.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0030486954_21.jpg",
+			"name": "Death Valley Girls"
+		},
+		{
+			"url": "https://lifeafterdeath.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0026022624_21.jpg",
+			"name": "Life After Death"
+		},
+		{
+			"url": "https://bsbd.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0006286290_21.jpg",
+			"name": "Blue Sky Black Death"
+		},
+		{
+			"url": "https://brighterdeathnow.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0031728633_21.jpg",
+			"name": "Brighter Death Now"
+		},
+		{
+			"url": "https://deathfromdetroit.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0008397642_21.jpg",
+			"name": "Death"
+		},
+		{
+			"url": "https://gloryordeathrecords.bandcamp.com",
+			"image_url": "https://f4.bcbits.com/img/0011529323_21.jpg",
+			"name": "Glory or Death Records"
+		}
+	]
+}
+INFO: 2023/06/27 13:12:10 Testing GET(url="https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4")
+INFO: 2023/06/27 13:12:10 Backend response:
+{
+	"artist": {
+		"url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+		"image_url": "https://i.scdn.co/image/ab6761610000e5eb8f11736777f5cc23c1e33d0d",
+		"name": "Ne Obliviscaris"
+	},
+	"albums": {
+		"albums": [
+			{
+				"url": "https://open.spotify.com/album/7yG3BBMsSAdjUfiH8QOrKj",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b27386a51c9a536b876d5d26a4ca",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"name": "Spirit in Black, Chapter Four (The Ultimate Metal Selection)",
+				"year": 2023
+			},
+			{
+				"url": "https://open.spotify.com/album/7yG3BBMsSAdjUfiH8QOrKj",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b27336c2f8ec56b4f62964831afb",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"name": "Spirit in Black, Chapter Four (The Ultimate Metal Selection)",
+				"year": 2017
+			},
+			{
+				"url": "https://open.spotify.com/album/7yG3BBMsSAdjUfiH8QOrKj",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b273e890f2027f801b1386d91d1e",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"name": "Spirit in Black, Chapter Four (The Ultimate Metal Selection)",
+				"year": 2014
+			},
+			{
+				"url": "https://open.spotify.com/album/7yG3BBMsSAdjUfiH8QOrKj",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b2731bbe4aa8d8b32e061e6896f9",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"name": "Spirit in Black, Chapter Four (The Ultimate Metal Selection)",
+				"year": 2012
+			},
+			{
+				"url": "https://open.spotify.com/album/7yG3BBMsSAdjUfiH8QOrKj",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b27346f8b00ce160ea53bd2b5bc4",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"name": "Spirit in Black, Chapter Four (The Ultimate Metal Selection)",
+				"year": 2023
+			},
+			{
+				"url": "https://open.spotify.com/album/7yG3BBMsSAdjUfiH8QOrKj",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b2739c86b5b7959a5a589ab72757",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"name": "Spirit in Black, Chapter Four (The Ultimate Metal Selection)",
+				"year": 2023
+			},
+			{
+				"url": "https://open.spotify.com/album/7yG3BBMsSAdjUfiH8QOrKj",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b273556db0f173827f66caf6dc8c",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"name": "Spirit in Black, Chapter Four (The Ultimate Metal Selection)",
+				"year": 2022
+			},
+			{
+				"url": "https://open.spotify.com/album/7yG3BBMsSAdjUfiH8QOrKj",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b273d834a92cfa1e22479653f3fb",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"name": "Spirit in Black, Chapter Four (The Ultimate Metal Selection)",
+				"year": 2017
+			},
+			{
+				"url": "https://open.spotify.com/album/7yG3BBMsSAdjUfiH8QOrKj",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b2736b239ae4143704ac76f9a96e",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"name": "Spirit in Black, Chapter Four (The Ultimate Metal Selection)",
+				"year": 2017
+			},
+			{
+				"url": "https://open.spotify.com/album/7yG3BBMsSAdjUfiH8QOrKj",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b2738497d8b9f6af1f658376f848",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"name": "Spirit in Black, Chapter Four (The Ultimate Metal Selection)",
+				"year": 2017
+			},
+			{
+				"url": "https://open.spotify.com/album/7yG3BBMsSAdjUfiH8QOrKj",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b273c7f3857f190075a11fe0da99",
+				"artist_url": "https://open.spotify.com/artist/0LyfQWJT6nXafLPZqxe9Of",
+				"name": "Spirit in Black, Chapter Four (The Ultimate Metal Selection)",
+				"year": 2016
+			}
+		]
+	}
+}
+INFO: 2023/06/27 13:12:10 Testing GET(url="https://music.youtube.com/channel/UCevRJ36hDdpdG_4ujQfXfOA")
+INFO: 2023/06/27 13:12:11 Backend response:
+{
+	"artist": {
+		"url": "https://music.youtube.com/channel/UCevRJ36hDdpdG_4ujQfXfOA",
+		"image_url": "https://lh3.googleusercontent.com/oU7DDOHPuYAi5hCAgMzr2zXwL_qMgiUx_YbYbB_ONzi6fgTJxzvHk4Aeof5OVYSlTK5hktdLSycwx08=w2880-h1200-p-l90-rj",
+		"name": "Ne Obliviscaris"
+	},
+	"albums": {}
+}
+INFO: 2023/06/27 13:12:11 Testing GET(url="https://macroblank.bandcamp.com")
+INFO: 2023/06/27 13:12:15 Backend response:
+{
+	"artist": {
+		"url": "https://macroblank.bandcamp.com",
+		"image_url": "https://f4.bcbits.com/img/0020940125_21.jpg",
+		"name": "Macroblank"
+	},
+	"albums": {
+		"albums": [
+			{
+				"url": "https://macroblank.bandcamp.com/album/solstice",
+				"image_url": "https://f4.bcbits.com/img/a3026412259_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "SOLSTICE",
+				"year": 2023
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/hooligan-mix",
+				"image_url": "https://f4.bcbits.com/img/a0293828144_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "Hooligan Mix",
+				"year": 2023
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--27",
+				"image_url": "https://f4.bcbits.com/img/a0835424738_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "色あせたエコー",
+				"year": 2023
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/jams",
+				"image_url": "https://f4.bcbits.com/img/a2563087724_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "スロー JAMS",
+				"year": 2023
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--14",
+				"image_url": "https://f4.bcbits.com/img/a2117298111_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "デスウィッシュ",
+				"year": 2023
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--24",
+				"image_url": "https://f4.bcbits.com/img/a3446344701_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "分離された",
+				"year": 2023
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/analog",
+				"image_url": "https://f4.bcbits.com/img/a1170284663_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "ANALOG レアリティ",
+				"year": 2022
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/occult",
+				"image_url": "https://f4.bcbits.com/img/a4045532919_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "OCCULT",
+				"year": 2022
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/macabre",
+				"image_url": "https://f4.bcbits.com/img/a2673246265_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "MACABRE",
+				"year": 2022
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--20",
+				"image_url": "https://f4.bcbits.com/img/a1863574669_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "至福を通じた平和",
+				"year": 2022
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/lp-3",
+				"image_url": "https://f4.bcbits.com/img/a0578242852_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "ごめんと言って lp",
+				"year": 2022
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--28",
+				"image_url": "https://f4.bcbits.com/img/a4191342497_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "ほろ苦いシンフォニー",
+				"year": 2022
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--17",
+				"image_url": "https://f4.bcbits.com/img/a4077363187_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "погребённый заживо",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/proxima-centauri",
+				"image_url": "https://f4.bcbits.com/img/a1249227738_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "proxima centauri",
+				"year": 2022
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/rare-psalms-collection-vol-5",
+				"image_url": "https://f4.bcbits.com/img/a1209623724_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "RARE PSALMS COLLECTION VOL.5",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/rare-psalms-collection-vol-4",
+				"image_url": "https://f4.bcbits.com/img/a4213705464_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "RARE PSALMS COLLECTION VOL.4",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/rare-psalms-collection-vol-3",
+				"image_url": "https://f4.bcbits.com/img/a2606207361_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "RARE PSALMS COLLECTION VOL.3",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/rare-psalms-collection-vol-2",
+				"image_url": "https://f4.bcbits.com/img/a1800267743_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "RARE PSALMS COLLECTION VOL.2",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/rare-psalms-collection-vol-1",
+				"image_url": "https://f4.bcbits.com/img/a0392557259_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "RARE PSALMS COLLECTION VOL.1",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/dungeon-of-lust",
+				"image_url": "https://f4.bcbits.com/img/a0654704113_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "dungeon of lust",
+				"year": 2022
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--21",
+				"image_url": "https://f4.bcbits.com/img/a1266512009_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "痛みの永遠",
+				"year": 2022
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/lp",
+				"image_url": "https://f4.bcbits.com/img/a0693931791_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "送信者に戻る lp",
+				"year": 2022
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--18",
+				"image_url": "https://f4.bcbits.com/img/a0457848067_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "ラストチャンス",
+				"year": 2022
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--16",
+				"image_url": "https://f4.bcbits.com/img/a0860914448_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "ボイドを超える",
+				"year": 2022
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/plastic-fables-2021-year-end-mix",
+				"image_url": "https://f4.bcbits.com/img/a3291296232_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "Plastic Fables (2021 Year End Mix)",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/tales-of-the-cypher",
+				"image_url": "https://f4.bcbits.com/img/a2410236860_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "Tales of the Cypher",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--12",
+				"image_url": "https://f4.bcbits.com/img/a2072529946_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "トラブルメーカー",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/avalanche-lp",
+				"image_url": "https://f4.bcbits.com/img/a2253061113_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "avalanche lp",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--13",
+				"image_url": "https://f4.bcbits.com/img/a0540045790_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "ネクロマンサー",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/verdant-halcyon",
+				"image_url": "https://f4.bcbits.com/img/a0356553541_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "verdant halcyon",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/vandal-club",
+				"image_url": "https://f4.bcbits.com/img/a3765748240_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "VANDAL CLUB",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--8",
+				"image_url": "https://f4.bcbits.com/img/a2831778020_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "没頭する",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--6",
+				"image_url": "https://f4.bcbits.com/img/a3931550207_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "ターミナルポイント",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--9",
+				"image_url": "https://f4.bcbits.com/img/a1817579214_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "本能",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--5",
+				"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "行方不明",
+				"year": 2021
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/ep-3",
+				"image_url": "https://f4.bcbits.com/img/a2121486381_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "ブロックの周り ep",
+				"year": 2020
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--4",
+				"image_url": "https://f4.bcbits.com/img/a1309811912_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "保持",
+				"year": 2020
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/ep-tape-edition",
+				"image_url": "https://f4.bcbits.com/img/a1497608370_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "肉と魂 ep (tape edition)",
+				"year": 2020
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/ibis-valley",
+				"image_url": "https://f4.bcbits.com/img/a1623583478_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "ibis valley",
+				"year": 2020
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/--2",
+				"image_url": "https://f4.bcbits.com/img/a2301393489_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "エコーチャンバーパーティー",
+				"year": 2020
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/album/-",
+				"image_url": "https://f4.bcbits.com/img/a2195809660_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"name": "絶望に負けた",
+				"year": 2020
+			}
+		]
+	}
+}
+INFO: 2023/06/27 13:12:15 Testing GET(url="https://open.spotify.com/album/29p0sILcBTXJmhzqJPzcxB")
+INFO: 2023/06/27 13:12:15 Backend response:
+{
+	"album": {
+		"url": "https://open.spotify.com/album/29p0sILcBTXJmhzqJPzcxB",
+		"image_url": "https://i.scdn.co/image/ab67616d0000b27386a51c9a536b876d5d26a4ca",
+		"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+		"name": "Exul",
+		"year": 2023
+	},
+	"tracks": {
+		"tracks": [
+			{
+				"url": "https://open.spotify.com/track/65FTeaTT6bvfRL6ZRIIMGG",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b27386a51c9a536b876d5d26a4ca",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"album_url": "https://open.spotify.com/album/29p0sILcBTXJmhzqJPzcxB",
+				"name": "Anhedonia",
+				"duration_seconds": 749
+			},
+			{
+				"url": "https://open.spotify.com/track/65FTeaTT6bvfRL6ZRIIMGG",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b27386a51c9a536b876d5d26a4ca",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"album_url": "https://open.spotify.com/album/29p0sILcBTXJmhzqJPzcxB",
+				"name": "Anhedonia",
+				"duration_seconds": 453
+			},
+			{
+				"url": "https://open.spotify.com/track/65FTeaTT6bvfRL6ZRIIMGG",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b27386a51c9a536b876d5d26a4ca",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"album_url": "https://open.spotify.com/album/29p0sILcBTXJmhzqJPzcxB",
+				"name": "Anhedonia",
+				"duration_seconds": 561
+			},
+			{
+				"url": "https://open.spotify.com/track/65FTeaTT6bvfRL6ZRIIMGG",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b27386a51c9a536b876d5d26a4ca",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"album_url": "https://open.spotify.com/album/29p0sILcBTXJmhzqJPzcxB",
+				"name": "Anhedonia",
+				"duration_seconds": 608
+			},
+			{
+				"url": "https://open.spotify.com/track/65FTeaTT6bvfRL6ZRIIMGG",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b27386a51c9a536b876d5d26a4ca",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"album_url": "https://open.spotify.com/album/29p0sILcBTXJmhzqJPzcxB",
+				"name": "Anhedonia",
+				"duration_seconds": 532
+			},
+			{
+				"url": "https://open.spotify.com/track/65FTeaTT6bvfRL6ZRIIMGG",
+				"image_url": "https://i.scdn.co/image/ab67616d0000b27386a51c9a536b876d5d26a4ca",
+				"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+				"album_url": "https://open.spotify.com/album/29p0sILcBTXJmhzqJPzcxB",
+				"name": "Anhedonia",
+				"duration_seconds": 222
+			}
+		]
+	}
+}
+INFO: 2023/06/27 13:12:15 Testing GET(url="https://music.youtube.com/browse/MPREb_AOBS6uUAmis")
+INFO: 2023/06/27 13:12:15 Backend response:
+{
+	"album": {
+		"url": "https://music.youtube.com/browse/MPREb_AOBS6uUAmis",
+		"image_url": "https://lh3.googleusercontent.com/6VmSdvTEpFR4OvVupTi456i2InzMgmFIP7rVZLTd08zBjZH-5p2O4kAjpoXGiZjZpMVt46buMxJo-40=w544-h544-l90-rj",
+		"artist_url": "https://music.youtube.com/channel/UCevRJ36hDdpdG_4ujQfXfOA",
+		"name": "Exul",
+		"year": 2023
+	},
+	"tracks": {
+		"tracks": [
+			{
+				"url": "https://music.youtube.com/watch?v=Bftqq_BqQHI",
+				"image_url": "https://lh3.googleusercontent.com/6VmSdvTEpFR4OvVupTi456i2InzMgmFIP7rVZLTd08zBjZH-5p2O4kAjpoXGiZjZpMVt46buMxJo-40=w544-h544-l90-rj",
+				"artist_url": "https://music.youtube.com/channel/UCevRJ36hDdpdG_4ujQfXfOA",
+				"album_url": "https://music.youtube.com/browse/MPREb_AOBS6uUAmis",
+				"name": "Equus",
+				"duration_seconds": 750
+			},
+			{
+				"url": "https://music.youtube.com/watch?v=_-yE_EzlJGA",
+				"image_url": "https://lh3.googleusercontent.com/6VmSdvTEpFR4OvVupTi456i2InzMgmFIP7rVZLTd08zBjZH-5p2O4kAjpoXGiZjZpMVt46buMxJo-40=w544-h544-l90-rj",
+				"artist_url": "https://music.youtube.com/channel/UCevRJ36hDdpdG_4ujQfXfOA",
+				"album_url": "https://music.youtube.com/browse/MPREb_AOBS6uUAmis",
+				"name": "Misericorde I - As the Flesh Falls",
+				"duration_seconds": 454
+			},
+			{
+				"url": "https://music.youtube.com/watch?v=-8NxoWHtYj0",
+				"image_url": "https://lh3.googleusercontent.com/6VmSdvTEpFR4OvVupTi456i2InzMgmFIP7rVZLTd08zBjZH-5p2O4kAjpoXGiZjZpMVt46buMxJo-40=w544-h544-l90-rj",
+				"artist_url": "https://music.youtube.com/channel/UCevRJ36hDdpdG_4ujQfXfOA",
+				"album_url": "https://music.youtube.com/browse/MPREb_AOBS6uUAmis",
+				"name": "Misericorde II - Anatomy of Quiescence",
+				"duration_seconds": 562
+			},
+			{
+				"url": "https://music.youtube.com/watch?v=ziJUuC4y8s4",
+				"image_url": "https://lh3.googleusercontent.com/6VmSdvTEpFR4OvVupTi456i2InzMgmFIP7rVZLTd08zBjZH-5p2O4kAjpoXGiZjZpMVt46buMxJo-40=w544-h544-l90-rj",
+				"artist_url": "https://music.youtube.com/channel/UCevRJ36hDdpdG_4ujQfXfOA",
+				"album_url": "https://music.youtube.com/browse/MPREb_AOBS6uUAmis",
+				"name": "Suspyre",
+				"duration_seconds": 609
+			},
+			{
+				"url": "https://music.youtube.com/watch?v=WAnq3cAhqDA",
+				"image_url": "https://lh3.googleusercontent.com/6VmSdvTEpFR4OvVupTi456i2InzMgmFIP7rVZLTd08zBjZH-5p2O4kAjpoXGiZjZpMVt46buMxJo-40=w544-h544-l90-rj",
+				"artist_url": "https://music.youtube.com/channel/UCevRJ36hDdpdG_4ujQfXfOA",
+				"album_url": "https://music.youtube.com/browse/MPREb_AOBS6uUAmis",
+				"name": "Graal",
+				"duration_seconds": 533
+			},
+			{
+				"url": "https://music.youtube.com/watch?v=3kKNCtYoz4k",
+				"image_url": "https://lh3.googleusercontent.com/6VmSdvTEpFR4OvVupTi456i2InzMgmFIP7rVZLTd08zBjZH-5p2O4kAjpoXGiZjZpMVt46buMxJo-40=w544-h544-l90-rj",
+				"artist_url": "https://music.youtube.com/channel/UCevRJ36hDdpdG_4ujQfXfOA",
+				"album_url": "https://music.youtube.com/browse/MPREb_AOBS6uUAmis",
+				"name": "Anhedonia",
+				"duration_seconds": 223
+			}
+		]
+	}
+}
+INFO: 2023/06/27 13:12:15 Testing GET(url="https://macroblank.bandcamp.com/album/--5")
+INFO: 2023/06/27 13:12:15 Backend response:
+{
+	"album": {
+		"url": "https://macroblank.bandcamp.com/album/--5",
+		"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+		"artist_url": "https://macroblank.bandcamp.com",
+		"name": "行方不明",
+		"year": 2021
+	},
+	"tracks": {
+		"tracks": [
+			{
+				"url": "https://macroblank.bandcamp.com/track/--92",
+				"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"album_url": "https://macroblank.bandcamp.com/album/--5",
+				"name": "慈悲を示さない",
+				"duration_seconds": 258
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/track/--93",
+				"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"album_url": "https://macroblank.bandcamp.com/album/--5",
+				"name": "タイトなコーナー",
+				"duration_seconds": 319
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/track/--91",
+				"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"album_url": "https://macroblank.bandcamp.com/album/--5",
+				"name": "手遅れです",
+				"duration_seconds": 242
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/track/--86",
+				"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"album_url": "https://macroblank.bandcamp.com/album/--5",
+				"name": "私は前にあなたを見てきた",
+				"duration_seconds": 246
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/track/--72",
+				"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"album_url": "https://macroblank.bandcamp.com/album/--5",
+				"name": "ドアをノックする",
+				"duration_seconds": 259
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/track/--87",
+				"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"album_url": "https://macroblank.bandcamp.com/album/--5",
+				"name": "決して振り返らない",
+				"duration_seconds": 309
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/track/--95",
+				"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"album_url": "https://macroblank.bandcamp.com/album/--5",
+				"name": "神聖な蓮",
+				"duration_seconds": 295
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/track/--88",
+				"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"album_url": "https://macroblank.bandcamp.com/album/--5",
+				"name": "ランダムな出会い",
+				"duration_seconds": 257
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/track/--90",
+				"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"album_url": "https://macroblank.bandcamp.com/album/--5",
+				"name": "おやすみ甘い王子",
+				"duration_seconds": 221
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/track/--96",
+				"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"album_url": "https://macroblank.bandcamp.com/album/--5",
+				"name": "痕跡を残さないでください",
+				"duration_seconds": 424
+			},
+			{
+				"url": "https://macroblank.bandcamp.com/track/--94",
+				"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+				"artist_url": "https://macroblank.bandcamp.com",
+				"album_url": "https://macroblank.bandcamp.com/album/--5",
+				"name": "私を忘れて",
+				"duration_seconds": 285
+			}
+		]
+	}
+}
+INFO: 2023/06/27 13:12:15 Testing GET(url="https://open.spotify.com/track/2R3enCnuZSLovqEu1LCl6t")
+INFO: 2023/06/27 13:12:15 Backend response:
+{
+	"artist": {
+		"url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+		"image_url": "https://i.scdn.co/image/ab6761610000e5eb8f11736777f5cc23c1e33d0d",
+		"name": "Ne Obliviscaris"
+	},
+	"album": {
+		"url": "https://open.spotify.com/album/29p0sILcBTXJmhzqJPzcxB",
+		"image_url": "https://i.scdn.co/image/ab67616d0000b27386a51c9a536b876d5d26a4ca",
+		"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+		"name": "Exul",
+		"year": 2023
+	},
+	"track": {
+		"url": "https://open.spotify.com/track/2R3enCnuZSLovqEu1LCl6t",
+		"image_url": "https://i.scdn.co/image/ab67616d0000b27386a51c9a536b876d5d26a4ca",
+		"artist_url": "https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4",
+		"album_url": "https://open.spotify.com/album/29p0sILcBTXJmhzqJPzcxB",
+		"name": "Suspyre",
+		"duration_seconds": 608
+	}
+}
+INFO: 2023/06/27 13:12:15 Testing GET(url="https://music.youtube.com/watch?v=ziJUuC4y8s4")
+INFO: 2023/06/27 13:12:16 Backend response:
+{
+	"artist": {
+		"url": "https://music.youtube.com/channel/UCevRJ36hDdpdG_4ujQfXfOA",
+		"image_url": "https://lh3.googleusercontent.com/oU7DDOHPuYAi5hCAgMzr2zXwL_qMgiUx_YbYbB_ONzi6fgTJxzvHk4Aeof5OVYSlTK5hktdLSycwx08=w2880-h1200-p-l90-rj",
+		"name": "Ne Obliviscaris"
+	},
+	"album": {
+		"url": "https://music.youtube.com/browse/MPREb_AOBS6uUAmis",
+		"image_url": "https://lh3.googleusercontent.com/6VmSdvTEpFR4OvVupTi456i2InzMgmFIP7rVZLTd08zBjZH-5p2O4kAjpoXGiZjZpMVt46buMxJo-40=w544-h544-l90-rj",
+		"artist_url": "https://music.youtube.com/browse/UCevRJ36hDdpdG_4ujQfXfOA",
+		"name": "Exul",
+		"year": 2023
+	},
+	"track": {
+		"url": "https://music.youtube.com/watch?v=ziJUuC4y8s4",
+		"image_url": "https://lh3.googleusercontent.com/6VmSdvTEpFR4OvVupTi456i2InzMgmFIP7rVZLTd08zBjZH-5p2O4kAjpoXGiZjZpMVt46buMxJo-40=w544-h544-l90-rj",
+		"artist_url": "https://music.youtube.com/channel/UCevRJ36hDdpdG_4ujQfXfOA",
+		"album_url": "https://music.youtube.com/browse/MPREb_AOBS6uUAmis",
+		"name": "Suspyre",
+		"duration_seconds": 609
+	}
+}
+INFO: 2023/06/27 13:12:16 Testing GET(url="https://macroblank.bandcamp.com/track/--91")
+INFO: 2023/06/27 13:12:17 Backend response:
+{
+	"artist": {
+		"url": "https://macroblank.bandcamp.com",
+		"image_url": "https://f4.bcbits.com/img/0020940125_21.jpg",
+		"name": "Macroblank"
+	},
+	"album": {
+		"url": "https://macroblank.bandcamp.com/album/--5",
+		"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+		"artist_url": "https://macroblank.bandcamp.com",
+		"name": "行方不明",
+		"year": 2021
+	},
+	"track": {
+		"url": "https://macroblank.bandcamp.com/track/--91",
+		"image_url": "https://f4.bcbits.com/img/a2627682117_9.jpg",
+		"artist_url": "https://macroblank.bandcamp.com",
+		"album_url": "https://macroblank.bandcamp.com/album/--5",
+		"name": "手遅れです",
+		"duration_seconds": 242
+	}
+}
+INFO: 2023/06/27 13:12:17 Testing POST(url="https://open.spotify.com/track/2R3enCnuZSLovqEu1LCl6t")
+INFO: 2023/06/27 13:12:24 Backend response:
+{}
+INFO: 2023/06/27 13:12:24 Testing POST(url="https://music.youtube.com/watch?v=ziJUuC4y8s4")
+INFO: 2023/06/27 13:12:27 Backend response:
+{}
+INFO: 2023/06/27 13:12:27 Testing POST(url="https://macroblank.bandcamp.com/track/--91")
+INFO: 2023/06/27 13:12:56 Backend response:
+{}
+INFO: 2023/06/27 13:12:56 Testing GET(type="track-stream", url="https://open.spotify.com/track/2R3enCnuZSLovqEu1LCl6t")
+INFO: 2023/06/27 13:12:56 Backend response:
+byte array of length 9732644
+INFO: 2023/06/27 13:12:56 Testing GET(type="track-stream", url="https://music.youtube.com/watch?v=ziJUuC4y8s4")
+INFO: 2023/06/27 13:12:56 Backend response:
+byte array of length 9732644
+INFO: 2023/06/27 13:12:56 Testing GET(type="track-stream", url="https://macroblank.bandcamp.com/track/--91")
+INFO: 2023/06/27 13:12:56 Backend response:
+byte array of length 2770121
+SUCCESS: GET(backend="spotify", query="Ne Obliviscaris", type="artists")
+SUCCESS: GET(backend="yt-music", query="Ne Obliviscaris", type="artists")
+SUCCESS: GET(backend="bandcamp", query="Death", type="artists")
+SUCCESS: GET(url="https://open.spotify.com/artist/5kbidtcpyRRMdAQUnI1BG4")
+SUCCESS: GET(url="https://music.youtube.com/channel/UCevRJ36hDdpdG_4ujQfXfOA")
+SUCCESS: GET(url="https://macroblank.bandcamp.com")
+SUCCESS: GET(url="https://open.spotify.com/album/29p0sILcBTXJmhzqJPzcxB")
+SUCCESS: GET(url="https://music.youtube.com/browse/MPREb_AOBS6uUAmis")
+SUCCESS: GET(url="https://macroblank.bandcamp.com/album/--5")
+SUCCESS: GET(url="https://open.spotify.com/track/2R3enCnuZSLovqEu1LCl6t")
+SUCCESS: GET(url="https://music.youtube.com/watch?v=ziJUuC4y8s4")
+SUCCESS: GET(url="https://macroblank.bandcamp.com/track/--91")
+SUCCESS: POST(url="https://open.spotify.com/track/2R3enCnuZSLovqEu1LCl6t")
+SUCCESS: POST(url="https://music.youtube.com/watch?v=ziJUuC4y8s4")
+SUCCESS: POST(url="https://macroblank.bandcamp.com/track/--91")
+SUCCESS: GET(type="track-stream", url="https://open.spotify.com/track/2R3enCnuZSLovqEu1LCl6t")
+SUCCESS: GET(type="track-stream", url="https://music.youtube.com/watch?v=ziJUuC4y8s4")
+SUCCESS: GET(type="track-stream", url="https://macroblank.bandcamp.com/track/--91")
+
+Summary:
+18/18 - ALL TESTS PASSED
+INFO: 2023/06/27 13:12:56 Shutting down the container
+INFO: 2023/06/27 13:12:56 Sending SIGINT to the container
+INFO: 2023/06/27 13:12:56 Waiting for I/O to shut down
+INFO: 2023/06/27 13:12:56 Waiting for the container to exit

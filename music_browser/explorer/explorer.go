@@ -5,6 +5,11 @@ import (
 	"database/sql"
 	"errors"
 	"fmt"
+	"io/ioutil"
+	"log"
+	"math/rand"
+	"net/http"
+	"os"
 	"os/exec"
 	"regexp"
 	"strings"
@@ -14,11 +19,12 @@ import (
 	_ "github.com/lib/pq"
 	"github.com/redis/go-redis/v9"
 
+	// "github.com/emilia-miki/music-browser/music_browser/logger"
 	"github.com/emilia-miki/music-browser/music_browser/music_api"
 )
 
-const TTL_SECONDS = 3600 * 24
-const TTL = time.Duration(TTL_SECONDS) * time.Second
+const TTL = 3600 * 24 * time.Second
+const DefaultMusicDirectory = "music"
 
 type BackendName = string
 
@@ -45,11 +51,15 @@ type Explorer struct {
 
 	redisClient *redis.Client
 	pgDB        *sql.DB
+	musicDir    *os.File
 
-	selectTrackUrlStmt    *sql.Stmt
+	selectLinkMap         *sql.Stmt
+	insertLinkMap         *sql.Stmt
+	selectImageUrlStmt    *sql.Stmt
 	insertImageStmt       *sql.Stmt
 	insertArtistStmt      *sql.Stmt
 	insertAlbumStmt       *sql.Stmt
+	selectTrackPathStmt   *sql.Stmt
 	insertTrackStmt       *sql.Stmt
 	insertArtistAlbumStmt *sql.Stmt
 	insertArtistTrackStmt *sql.Stmt
@@ -69,54 +79,84 @@ func New(
 	if err != nil {
 		return nil, err
 	}
+
 	e.redisClient = redis.NewClient(opts)
+	err = os.MkdirAll(DefaultMusicDirectory, os.ModeDir|os.ModePerm)
+	if err != nil {
+		return nil, err
+	}
 
 	e.pgDB, err = sql.Open("postgres", postgresConnectionString)
 	if err != nil {
 		return nil, err
 	}
 
-	e.selectTrackUrlStmt, err = e.pgDB.Prepare(
-		"SELECT url FROM track WHERE url = $1")
+	e.selectLinkMap, err = e.pgDB.Prepare(
+		"SELECT yt_url FROM link_map WHERE sp_url = $1")
 	if err != nil {
 		return nil, err
 	}
+
+	e.insertLinkMap, err = e.pgDB.Prepare(
+		"INSERT INTO link_map (sp_url, yt_url) VALUES ($1, $2)")
+	if err != nil {
+		return nil, err
+	}
+
+	e.selectImageUrlStmt, err = e.pgDB.Prepare(
+		"SELECT url FROM image WHERE url = $1")
+	if err != nil {
+		return nil, err
+	}
+
 	e.insertImageStmt, err = e.pgDB.Prepare("INSERT INTO image " +
 		"(url, path)" +
 		"VALUES ($1, $2)")
 	if err != nil {
 		return nil, err
 	}
+
 	e.insertArtistStmt, err = e.pgDB.Prepare("INSERT INTO artist " +
 		"(url, image_url, name)" +
 		"VALUES ($1, $2, $3)")
 	if err != nil {
 		return nil, err
 	}
+
 	e.insertAlbumStmt, err = e.pgDB.Prepare("INSERT INTO album " +
 		"(url, image_url, name, year)" +
 		"VALUES ($1, $2, $3, $4)")
 	if err != nil {
 		return nil, err
 	}
+
+	e.selectTrackPathStmt, err = e.pgDB.Prepare("SELECT path FROM track " +
+		"WHERE url = $1")
+	if err != nil {
+		return nil, err
+	}
+
 	e.insertTrackStmt, err = e.pgDB.Prepare("INSERT INTO track " +
 		"(url, image_url, album_url, path, name, duration_seconds)" +
 		"VALUES ($1, $2, $3, $4, $5, $6)")
 	if err != nil {
 		return nil, err
 	}
+
 	e.insertArtistAlbumStmt, err = e.pgDB.Prepare("INSERT INTO artist_album " +
 		"(artist_url, album_url)" +
 		"VALUES ($1, $2)")
 	if err != nil {
 		return nil, err
 	}
+
 	e.insertArtistTrackStmt, err = e.pgDB.Prepare("INSERT INTO artist_track " +
 		"(artist_url, track_url)" +
 		"VALUES ($1, $2)")
 	if err != nil {
 		return nil, err
 	}
+
 	e.insertAlbumTrackStmt, err = e.pgDB.Prepare("INSERT INTO album_track " +
 		"(album_url, track_url)" +
 		"VALUES ($1, $2)")
@@ -128,50 +168,43 @@ func New(
 }
 
 func (e *Explorer) Close() error {
+	var errs []error
 	var err error
+
 	err = e.redisClient.Close()
-	if err != nil {
-		return err
-	}
+	errs = append(errs, err)
+
 	err = e.pgDB.Close()
-	if err != nil {
-		return err
-	}
+	errs = append(errs, err)
 
-	err = e.selectTrackUrlStmt.Close()
-	if err != nil {
-		return err
-	}
+	err = e.selectLinkMap.Close()
+	errs = append(errs, err)
+
+	err = e.selectImageUrlStmt.Close()
+	errs = append(errs, err)
+
 	err = e.insertImageStmt.Close()
-	if err != nil {
-		return err
-	}
-	err = e.insertArtistStmt.Close()
-	if err != nil {
-		return err
-	}
-	err = e.insertAlbumStmt.Close()
-	if err != nil {
-		return err
-	}
-	err = e.insertTrackStmt.Close()
-	if err != nil {
-		return err
-	}
-	err = e.insertArtistAlbumStmt.Close()
-	if err != nil {
-		return err
-	}
-	err = e.insertArtistTrackStmt.Close()
-	if err != nil {
-		return err
-	}
-	err = e.insertAlbumTrackStmt.Close()
-	if err != nil {
-		return err
-	}
+	errs = append(errs, err)
 
-	return nil
+	err = e.insertArtistStmt.Close()
+	errs = append(errs, err)
+
+	err = e.insertAlbumStmt.Close()
+	errs = append(errs, err)
+
+	err = e.insertTrackStmt.Close()
+	errs = append(errs, err)
+
+	err = e.insertArtistAlbumStmt.Close()
+	errs = append(errs, err)
+
+	err = e.insertArtistTrackStmt.Close()
+	errs = append(errs, err)
+
+	err = e.insertAlbumTrackStmt.Close()
+	errs = append(errs, err)
+
+	return errors.Join(errs...)
 }
 
 func extractBackendName(url string) string {
@@ -468,36 +501,213 @@ func (e *Explorer) SearchAlbums(
 	return albums, nil
 }
 
-func (e *Explorer) DownloadTrack(
-	track *music_api.TrackWithAlbumAndArtist,
-) error {
-	cmd := exec.Command("yt-dlp",
-		*track.Track.Url, "-x", "--audio-format", "opus", "--write-thumbnail")
+func (e *Explorer) translateLink(url string) (string, error) {
+	fmt.Printf("Translating sp_url %s to yt_url\n", url)
+
+	var translatedUrl string
+	err := e.selectLinkMap.QueryRow(url).Scan(&translatedUrl)
+	fmt.Printf("Postgres returned err=%s, url=%s\n", err, translatedUrl)
+	if err == nil {
+		fmt.Printf("Link translation is cached: %s -> %s\n", url, translatedUrl)
+		return translatedUrl, nil
+	}
+	if err != nil && !errors.Is(err, sql.ErrNoRows) {
+		return "", err
+	}
+
+	sp := e.backends[SpotifyBackendName]
+	ytm := e.backends[YtMusicBackendName]
+
+	track, err := sp.GetTrack(url)
+	if err != nil {
+		return "", err
+	}
+
+	albums, err := ytm.SearchAlbums(*track.Album.Name)
+	if err != nil {
+		return "", err
+	}
+
+	var album *music_api.AlbumWithTracks
+	for _, a := range albums.Albums {
+		if *a.Name == *track.Album.Name {
+			album, err = ytm.GetAlbum(*a.Url)
+			if err != nil {
+				return "", err
+			}
+			break
+		}
+	}
+
+	if album == nil {
+		return "", errors.New("Couldn't find this track on Youtube Music")
+	}
+
+	for _, t := range album.Tracks.Tracks {
+		if *track.Track.Name == *t.Name {
+			fmt.Printf(
+				"Translated sp_link %s to yt_link %s\n",
+				url, *t.Url,
+			)
+
+			_, err := e.insertLinkMap.Exec(url, *t.Url)
+			if err != nil {
+				return "", err
+			}
+
+			return *t.Url, nil
+		}
+	}
+
+	return "", errors.New("Couldn't find this track on Youtube Music")
+}
+
+func (e *Explorer) GetTrackStream(
+	url string,
+) (b []byte, mime string, err error) {
+	if extractBackendName(url) == SpotifyBackendName {
+		url, err = e.translateLink(url)
+		if err != nil {
+			return
+		}
+	}
+
+	var path string
+	row := e.selectTrackPathStmt.QueryRow(url)
+	err = row.Scan(&path)
+	if err != nil {
+		return
+	}
+
+	b, err = os.ReadFile(fmt.Sprintf(
+		"%s/%s", DefaultMusicDirectory, path))
+	if err != nil {
+		return
+	}
+
+	mime = "audio/ogg"
+	return
+}
+
+func downloadImage(name string, url string) (string, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		log.Println("ERROR: " + err.Error())
+	}
+
+	ct := resp.Header.Get("Content-Type")
+	ext, ok := strings.CutPrefix(ct, "image/")
+	if !ok {
+		return "", errors.New("Invalid Content-Type: " + ct)
+	}
+	b, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		return "", err
+	}
+
+	id := rand.Int() % 10000000000
+	basePath := fmt.Sprintf("%s/%s [%d]", DefaultMusicDirectory, name, id)
+	origPath := fmt.Sprintf("%s.%s", basePath, ext)
+	newPath := fmt.Sprintf("%s.%s", basePath, "webp")
+
+	err = ioutil.WriteFile(origPath, b, 0644)
+	if err != nil {
+		return "", err
+	}
+
+	if origPath != newPath {
+		_, err := exec.Command("cwebp", origPath, "-o", newPath).Output()
+		os.Remove(origPath)
+		if err != nil {
+			return "", err
+		}
+	}
+
+	os.Remove(origPath)
+	return newPath, nil
+}
+
+func (e *Explorer) ensureImageDownloaded(
+	tx *sql.Tx,
+	name string,
+	imageUrl *string,
+) (res sql.NullString, err error) {
+	if imageUrl == nil {
+		return
+	}
+
+	row := tx.Stmt(e.selectImageUrlStmt).QueryRow(*imageUrl)
+	url := new(string)
+	err = row.Scan(url)
+	if err == nil || !errors.Is(err, sql.ErrNoRows) {
+		return
+	}
+
+	path, err := downloadImage(name, *imageUrl)
+	if err != nil {
+		return
+	}
+
+	_, err = tx.Stmt(e.insertImageStmt).Exec(*imageUrl, path)
+	if err != nil {
+		return
+	}
+
+	res = sql.NullString{
+		String: *imageUrl,
+		Valid:  true,
+	}
+	return
+}
+
+func (e *Explorer) DownloadTrack(url string) error {
+	fmt.Println("downloading track " + url)
+	backendName := extractBackendName(url)
+	if backendName == SpotifyBackendName {
+		var err error
+		url, err = e.translateLink(url)
+		if err != nil {
+			return err
+		}
+		backendName = YtMusicBackendName
+	}
+
+	backend := e.backends[backendName]
+	track, err := backend.GetTrack(url)
+	if err != nil {
+		return nil
+	}
+
+	if track.Track.Url == nil {
+		track.Track.Url = &url
+	}
+
+	cmd := exec.Command("yt-dlp", *track.Track.Url,
+		"-x", "--audio-format", "opus")
+	cmd.Dir = DefaultMusicDirectory
+
 	out, err := cmd.Output()
 	if err != nil {
 		return err
 	}
+	lines := string(out)
 
-	re, err := regexp.Compile(`^\[\w+\] Destination: (.+)$`)
+	if strings.Contains(lines, "has already been downloaded") {
+		return nil
+	}
+
+	var trackPath string
+	songRe, err := regexp.Compile(`\[download\] Destination: (.+)\.\w+`)
 	if err != nil {
 		return err
 	}
-
-	lines := strings.Split(string(out), "\n")
-
-	var thumbnail string
-	var song string
-	for _, line := range lines {
-		submatches := re.FindStringSubmatch(line)
-		fileName := submatches[1]
-		if strings.HasSuffix(fileName, ".webp") {
-			thumbnail = fileName
-		} else if strings.HasSuffix(fileName, ".opus") {
-			song = fileName
-		}
+	submatches := songRe.FindStringSubmatch(lines)
+	if len(submatches) == 2 {
+		trackPath = submatches[1] + ".opus"
 	}
-	if thumbnail == "" || song == "" {
-		return errors.New("thumbnail and song should have been set")
+
+	if trackPath == "" {
+		return errors.New("The song filename should have been set")
 	}
 
 	tx, err := e.pgDB.Begin()
@@ -505,53 +715,105 @@ func (e *Explorer) DownloadTrack(
 		return err
 	}
 
-	var url string
-	err = tx.Stmt(e.selectTrackUrlStmt).QueryRow(track.Track.Url).Scan(&url)
-	if err != nil {
-		return err
+	artistExists := track.Artist.Url != nil
+	if artistExists {
+		url := *track.Artist.Url
+		name := *track.Artist.Name
+
+		imageUrl, err := e.ensureImageDownloaded(
+			tx, *track.Artist.Name, track.Artist.ImageUrl)
+		if err != nil {
+			return err
+		}
+
+		_, err = tx.Stmt(e.insertArtistStmt).Exec(url, imageUrl, name)
+		if err != nil {
+			return err
+		}
 	}
 
-	_, err = tx.Stmt(e.insertImageStmt).Exec(track.Track.ImageUrl, thumbnail)
-	if err != nil {
-		return err
+	albumExists := track.Album.Url != nil
+	if albumExists {
+		url := *track.Album.Url
+		name := *track.Album.Name
+		var year sql.NullInt32
+
+		imageUrl, err := e.ensureImageDownloaded(
+			tx, name, track.Album.ImageUrl)
+		if err != nil {
+			return err
+		}
+
+		if track.Album.Year != nil {
+			year = sql.NullInt32{
+				Int32: int32(*track.Album.Year),
+				Valid: true,
+			}
+		}
+
+		_, err = tx.Stmt(e.insertAlbumStmt).Exec(url, imageUrl, name, year)
+		if err != nil {
+			return err
+		}
 	}
 
-	_, err = tx.Stmt(e.insertArtistStmt).Exec(
-		track.Artist.Url, track.Artist.ImageUrl, track.Artist.Name)
-	if err != nil {
-		return err
+	trackExists := track.Track.Url != nil && trackPath != ""
+	if trackExists {
+		url := *track.Track.Url
+		var albumUrl sql.NullString
+		path := trackPath
+		name := *track.Track.Name
+		var durationSeconds sql.NullInt32
+
+		imageUrl, err := e.ensureImageDownloaded(
+			tx, name, track.Track.ImageUrl)
+		if err != nil {
+			return nil
+		}
+
+		if albumExists {
+			albumUrl = sql.NullString{
+				String: *track.Album.Url,
+				Valid:  true,
+			}
+		}
+
+		if track.Track.DurationSeconds != nil {
+			durationSeconds = sql.NullInt32{
+				Int32: int32(*track.Track.DurationSeconds),
+				Valid: true,
+			}
+		}
+
+		_, err = tx.Stmt(e.insertTrackStmt).Exec(
+			url, imageUrl, albumUrl, path, name, durationSeconds)
+		if err != nil {
+			return err
+		}
 	}
 
-	_, err = tx.Stmt(e.insertAlbumStmt).Exec(
-		track.Album.Url, track.Album.ImageUrl,
-		track.Album.Name, track.Album.Year)
-	if err != nil {
-		return err
+	if artistExists && albumExists {
+		_, err = tx.Stmt(e.insertArtistAlbumStmt).Exec(
+			*track.Artist.Url, *track.Album.Url)
+		if err != nil {
+			return err
+		}
 	}
 
-	_, err = tx.Stmt(e.insertArtistAlbumStmt).Exec(
-		track.Artist.Url, track.Album.Url)
-	if err != nil {
-		return err
+	if artistExists && trackExists {
+		_, err = tx.Stmt(e.insertArtistTrackStmt).Exec(
+			*track.Artist.Url, *track.Track.Url)
+		if err != nil {
+			return err
+		}
 	}
 
-	_, err = tx.Stmt(e.insertTrackStmt).Exec(
-		track.Track.Url, track.Track.ImageUrl, track.Track.AlbumUrl,
-		song, track.Track.Name, track.Track.DurationSeconds)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Stmt(e.insertArtistTrackStmt).Exec(
-		track.Artist.Url, track.Track.Url)
-	if err != nil {
-		return err
-	}
-
-	_, err = tx.Stmt(e.insertAlbumTrackStmt).Exec(
-		track.Track.AlbumUrl, track.Track.Url)
-	if err != nil {
-		return err
+	if albumExists && trackExists {
+		_, err = tx.Stmt(e.insertAlbumTrackStmt).Exec(
+			*track.Track.AlbumUrl, *track.Track.Url)
+		if err != nil {
+			return err
+		}
 	}
 
 	err = tx.Commit()

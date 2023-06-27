@@ -15,14 +15,17 @@ import {
   Tracks,
 } from "../ts-proto/music_api_pb";
 
-const YT_MUSIC_BROWSE_BASE_URL = "https://music.youtube.com/browse/";
-const YT_MUSIC_VIDEO_BASE_URL = "https://music.youtube.com/watch?v=";
+const YT_MUSIC_ARTIST_BASE_URL = "https://music.youtube.com/channel/";
+const YT_MUSIC_ALBUM_BASE_URL = "https://music.youtube.com/browse/";
+const YT_MUSIC_TRACK_BASE_URL = "https://music.youtube.com/watch?v=";
 
 function extractId(url: string): string {
-  if (url.startsWith(YT_MUSIC_BROWSE_BASE_URL)) {
-    return url.substring(YT_MUSIC_BROWSE_BASE_URL.length);
-  } else if (url.startsWith(YT_MUSIC_VIDEO_BASE_URL)) {
-    return url.substring(YT_MUSIC_VIDEO_BASE_URL.length);
+  if (url.startsWith(YT_MUSIC_ARTIST_BASE_URL)) {
+    return url.substring(YT_MUSIC_ARTIST_BASE_URL.length);
+  } else if (url.startsWith(YT_MUSIC_ALBUM_BASE_URL)) {
+    return url.substring(YT_MUSIC_ALBUM_BASE_URL.length);
+  } else if (url.startsWith(YT_MUSIC_TRACK_BASE_URL)) {
+    return url.substring(YT_MUSIC_TRACK_BASE_URL.length);
   } else {
     return "";
   }
@@ -96,7 +99,7 @@ function parseArtistWithAlbums(
       const album = new Album();
 
       if (data.id) {
-        album.setUrl(YT_MUSIC_BROWSE_BASE_URL + data.id);
+        album.setUrl(YT_MUSIC_ALBUM_BASE_URL + data.id);
       }
 
       album.setArtistUrl(artistUrl);
@@ -145,7 +148,7 @@ function parseAlbumWithTracks(
 
     if (albumData.header.author) {
       const artistId = albumData.header.author.channel_id;
-      const artistUrl = YT_MUSIC_BROWSE_BASE_URL + artistId;
+      const artistUrl = YT_MUSIC_ARTIST_BASE_URL + artistId;
       album.setArtistUrl(artistUrl);
     }
 
@@ -163,7 +166,7 @@ function parseAlbumWithTracks(
     const track = new Track();
 
     if (trackData.id) {
-      track.setUrl(YT_MUSIC_VIDEO_BASE_URL + trackData.id);
+      track.setUrl(YT_MUSIC_TRACK_BASE_URL + trackData.id);
     }
 
     let imageUrl;
@@ -220,7 +223,7 @@ function parseTrackWithAlbumAndArtist(
     const header = artistData.header;
 
     if (artistId) {
-      artist.setUrl(YT_MUSIC_BROWSE_BASE_URL + artistId);
+      artist.setUrl(YT_MUSIC_ARTIST_BASE_URL + artistId);
     }
 
     if (
@@ -250,11 +253,11 @@ function parseTrackWithAlbumAndArtist(
   const album = new Album();
 
   if (albumId) {
-    album.setUrl(YT_MUSIC_BROWSE_BASE_URL + albumId);
+    album.setUrl(YT_MUSIC_ALBUM_BASE_URL + albumId);
   }
 
   if (albumId && artistId) {
-    album.setArtistUrl(YT_MUSIC_BROWSE_BASE_URL + artistId);
+    album.setArtistUrl(YT_MUSIC_ALBUM_BASE_URL + artistId);
   }
 
   if (albumData?.header) {
@@ -277,7 +280,7 @@ function parseTrackWithAlbumAndArtist(
 
   const trackId = trackData?.basic_info.id;
   if (trackId) {
-    track.setUrl(YT_MUSIC_VIDEO_BASE_URL + trackId);
+    track.setUrl(YT_MUSIC_TRACK_BASE_URL + trackId);
   }
 
   if (trackData) {
@@ -405,7 +408,7 @@ async function createYtMusicApiServer() {
             if (item.id && item.name) {
               const artist = new Artist();
 
-              artist.setUrl(YT_MUSIC_BROWSE_BASE_URL + item.id);
+              artist.setUrl(YT_MUSIC_ALBUM_BASE_URL + item.id);
 
               if (item.thumbnail) {
                 const imageUrl = getBestThumbnailUrl(item.thumbnail.contents);
@@ -445,7 +448,7 @@ async function createYtMusicApiServer() {
               if (item.id && item.title) {
                 const album = new Album();
 
-                album.setUrl(YT_MUSIC_BROWSE_BASE_URL + item.id);
+                album.setUrl(YT_MUSIC_ALBUM_BASE_URL + item.id);
 
                 if (item.thumbnail) {
                   const imageUrl = getBestThumbnailUrl(item.thumbnail.contents);
@@ -456,7 +459,7 @@ async function createYtMusicApiServer() {
 
                 if (item.author?.channel_id) {
                   album.setArtistUrl(
-                    YT_MUSIC_BROWSE_BASE_URL + item.author?.channel_id
+                    YT_MUSIC_ARTIST_BASE_URL + item.author?.channel_id
                   );
                 }
 
