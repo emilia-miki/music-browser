@@ -1,0 +1,84 @@
+syntax = "proto3";
+package music_api;
+option go_package = "github.com/emilia-miki/music-browser/music_browser/model/proto";
+
+service Browser {
+  rpc GetArtist(Id) returns (ArtistWithAlbums) {}
+  rpc GetAlbum(Id) returns (AlbumWithTracks) {}
+  rpc GetTrack(Id) returns (TrackWithAlbumAndArtist) {}
+
+  rpc SearchArtists(Query) returns (Artists) {}
+  rpc SearchAlbums(Query) returns (Albums) {}
+  rpc SearchTracks(Query) returns (Tracks) {}
+}
+
+service GetUpNext {
+  rpc GetUpNext(Id) returns (Tracks) {}
+}
+
+service GetByTag {
+  rpc GetByTag(Tag) returns (Tracks) {}
+}
+
+message Id {
+  string url = 1;
+}
+
+message Query {
+  string query = 1;
+}
+
+message Tag {
+  string tag = 1;
+}
+
+message Artist {
+  string url = 1;
+  string image_url = 2;
+  string name = 3;
+}
+
+message Artists {
+  repeated Artist artists = 1;
+}
+
+message Album {
+  string url = 1;
+  string image_url = 2;
+  string artist_url = 3;
+  string name = 4;
+  uint32 year = 5;
+}
+
+message Albums {
+  Album albums = 1;
+}
+
+message Track {
+  string url = 1;
+  string image_url = 2;
+  string artist_url = 3;
+  string album_url = 4;
+  string name = 5;
+  uint32 duration_seconds = 6;
+}
+
+message Tracks {
+  repeated Track tracks = 1;
+}
+
+message ArtistWithAlbums {
+  Artist artist = 1;
+  Albums albums = 2;
+}
+
+message AlbumWithTracks {
+  Album album = 1;
+  Tracks tracks = 2;
+}
+
+message TrackWithAlbumAndArtist {
+  Track track = 1;
+  Album album = 2;
+  Artist artist = 3;
+}

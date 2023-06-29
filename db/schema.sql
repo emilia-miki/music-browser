@@ -1,6 +1,6 @@
-CREATE TABLE IF NOT EXISTS link_map (
-    sp_url TEXT PRIMARY KEY,
-    yt_url TEXT
+CREATE TABLE IF NOT EXISTS id_mapping (
+    orig_id TEXT PRIMARY KEY,
+    translated_id TEXT
 );
 
 CREATE TABLE IF NOT EXISTS image (
