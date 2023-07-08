@@ -4,7 +4,7 @@
 // - protoc             v4.23.4
 // source: music_browser.proto
 
-package go_proto
+package grpc
 
 import (
 	context "context"
